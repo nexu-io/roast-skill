@@ -70,14 +70,6 @@
 - 🦉 物种: 午夜永动机
 - 标签: 午夜CEO · 人形RSS · [坏笑]成瘾 · DDoS沟通 · 疑似 cron job
 
-### 玉伯（Founder, YouMind）
-
-> "你的推特不是社交媒体，是一本没有页码的禅宗语录"
-
-- 🐂🐴 牛马指数: 72
-- 🧘 物种: 赛博禅师
-- 标签: 推特诗人 · 自黑大师 · 鸡汤酿造师 · 自研原教旨 · 同行点火员
-
 ---
 
 ## 安装
@@ -153,9 +145,7 @@ roast-skill/
 ├── assets/
 │   └── template.html     # 落地页模板（深色毛玻璃风格）
 └── examples/
-    ├── tom/              # Tom (nexu CEO) 锐评示例
-    │   └── roast.md
-    └── yubo/             # 玉伯 (YouMind Founder) 锐评示例
+    └── tom/              # Tom (nexu CEO) 锐评示例
         └── roast.md
 ```
 
