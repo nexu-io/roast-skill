@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tom 的赛博分身 — nexu</title>
+<meta property="og:title" content="Tom 的赛博分身 — AI 读完了我所有消息">
+<meta property="og:description" content="ENTJ · 牛马指数 94/100 · 物种：午夜永动机 · 蒸馏完成度 78%">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#06060a;
+    --glass:rgba(255,255,255,0.06);
+    --glass2:rgba(255,255,255,0.09);
+    --border:rgba(255,255,255,0.10);
+    --border2:rgba(255,255,255,0.18);
+    --text:#f5f5fa;
+    --text2:rgba(255,255,255,0.72);
+    --text3:rgba(255,255,255,0.50);
+    --p1:#b89eff;--p2:#5ccbfa;--p3:#ffa64d;--p4:#3de8f7;--p5:#4eeaaa;
+    --glow1:rgba(184,158,255,0.18);--glow2:rgba(92,203,250,0.15);
+    --sans:'Inter',-apple-system,sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--sans);background:var(--bg);color:var(--text);
+    min-height:100vh;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -5%,rgba(167,139,250,0.07),transparent),
+      radial-gradient(ellipse 60% 40% at 85% 15%,rgba(56,189,248,0.05),transparent),
+      radial-gradient(ellipse 50% 30% at 50% 95%,rgba(251,146,60,0.04),transparent);
+  }
+  .page{max-width:520px;margin:0 auto;padding:40px 20px 48px}
+
+  /* ─ GLASS ─ */
+  .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;transition:all .3s}
+  .card:hover{border-color:var(--border2);background:var(--glass2)}
+
+  /* ─ NAV ─ */
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+  .nav img{height:22px;opacity:.6}
+  .nav-cta{padding:8px 18px;border-radius:100px;font-size:12px;font-weight:600;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;text-decoration:none;box-shadow:0 0 16px var(--glow1);transition:all .3s}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 0 24px var(--glow1)}
+
+  /* ─ HEADER ─ */
+  .hdr{text-align:center;margin-bottom:24px}
+  .av{width:80px;height:80px;border-radius:50%;margin:0 auto 16px;padding:2px;background:linear-gradient(135deg,var(--p1),var(--p2),var(--p3));position:relative}
+  .av::after{content:'';position:absolute;inset:-6px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p2));opacity:.12;filter:blur(10px)}
+  .av div{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(56,189,248,0.1));display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#fff}
+  .title{font-size:22px;font-weight:700;letter-spacing:-.5px;color:#fff}
+  .title span{background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .subtitle{font-size:13px;color:var(--text2);margin-top:4px}
+
+  /* ─ SECTION LABEL ─ */
+  .label{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+
+  /* ── PROFILE TAGS ── */
+  .profile-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px}
+  .ptag{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--glass);color:var(--text);letter-spacing:.3px;transition:all .2s}
+  .ptag:hover{border-color:rgba(167,139,250,0.3);background:var(--glow1)}
+  .ptag[data-type="company"]{border-color:rgba(92,203,250,0.35);color:var(--p2);background:rgba(92,203,250,0.08)}
+  .ptag[data-type="role"]{border-color:rgba(184,158,255,0.35);color:var(--p1);background:rgba(184,158,255,0.08)}
+  .ptag[data-type="level"]{border-color:rgba(255,166,77,0.35);color:var(--p3);background:rgba(255,166,77,0.08)}
+  .ptag[data-type="mbti"]{border-color:rgba(78,234,170,0.35);color:var(--p5);background:rgba(78,234,170,0.08)}
+  .ptag[data-type="vibe"]{border-color:rgba(61,232,247,0.35);color:var(--p4);background:rgba(61,232,247,0.08)}
+
+  /* ── 1. 锐评卡 ── */
+  .stats{display:flex;justify-content:center;gap:10px;margin-bottom:14px}
+  .stat{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+  .stat-val{font-size:24px;font-weight:800;font-family:var(--mono);background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .stat-lbl{font-size:10px;color:var(--text);margin-top:2px;letter-spacing:.5px;font-weight:500}
+  .species{text-align:center;margin-bottom:14px}
+  .species-name{font-size:16px;font-weight:700;color:var(--p3)}
+  .species-sub{font-size:12px;color:var(--text2)}
+  .bars{margin:14px 0}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+  .bar-label{width:56px;text-align:right;color:var(--text);font-weight:500;flex-shrink:0}
+  .bar-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px}
+  .bar-val{width:32px;font-family:var(--mono);font-size:11px;color:var(--text);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .tag{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;background:var(--glass);border:1px solid var(--border);color:var(--text);transition:all .2s}
+  .tag:hover{border-color:rgba(167,139,250,0.3);background:var(--glow1)}
+  .roast-text{font-size:14px;line-height:1.9;color:rgba(255,255,255,0.88)}
+  .roast-text b{color:var(--p1);font-weight:700}
+
+  /* ── 2. AI 对话 ── */
+  .chat-preview{display:flex;flex-direction:column;gap:10px}
+  .chat-msg{display:flex;gap:10px;align-items:flex-start}
+  .chat-msg.user{flex-direction:row-reverse}
+  .chat-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .chat-msg.bot .chat-av{background:linear-gradient(135deg,var(--p1),var(--p2))}
+  .chat-msg.user .chat-av{background:rgba(255,255,255,0.1)}
+  .chat-bubble{max-width:80%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.6}
+  .chat-msg.bot .chat-bubble{background:var(--glass2);border:1px solid var(--border);border-bottom-left-radius:4px}
+  .chat-msg.user .chat-bubble{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border-bottom-right-radius:4px}
+  .chat-cta{text-align:center;margin-top:12px}
+  .chat-cta a{font-size:12px;color:var(--p1);text-decoration:none;font-weight:600}
+  .try-ask{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .try-ask span{padding:5px 12px;border-radius:100px;font-size:11px;background:var(--glass);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .2s}
+  .try-ask span:hover{border-color:rgba(167,139,250,0.3);color:var(--text)}
+
+  /* ── 3. Skill 文件 ── */
+  .skill-tree{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,0.82);line-height:2}
+  .skill-tree .icon{margin-right:6px}
+  .progress-section{margin-top:14px}
+  .progress-bar{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--p1),var(--p2));width:78%}
+  .progress-text{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:6px}
+  .skill-actions{display:flex;gap:8px;margin-top:14px}
+  .skill-btn{padding:8px 16px;border-radius:100px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text2);text-decoration:none;transition:all .2s;background:transparent;cursor:pointer}
+  .skill-btn:hover{border-color:rgba(167,139,250,0.3);color:var(--text)}
+  .skill-btn.primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;box-shadow:0 2px 12px var(--glow1)}
+
+  /* ─ SHARE ─ */
+  .share-section{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  .sh{padding:7px 14px;border-radius:100px;font-size:11px;font-weight:500;border:1px solid var(--border);color:var(--text2);cursor:pointer;text-decoration:none;transition:all .2s;background:transparent}
+  .sh:hover{color:var(--text);border-color:var(--border2)}
+
+  /* ─ MBTI BADGE ─ */
+  .mbti{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--glow1);border:1px solid rgba(167,139,250,0.2);border-radius:6px;padding:3px 10px;letter-spacing:2px;color:var(--p1);margin-top:6px}
+
+  /* ─ FOOTER ─ */
+  .footer{text-align:center;padding:16px 0 0;font-size:11px;color:var(--text3)}
+  .footer a{color:var(--p1);text-decoration:none}
+
+  /* ─ POSTER ─ */
+  .poster-popup{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;justify-content:center;align-items:center;padding:20px;backdrop-filter:blur(12px)}
+  .poster-popup.show{display:flex}
+  .poster-popup img{max-width:340px;width:100%;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  .poster-popup .close{position:absolute;top:20px;right:24px;font-size:28px;color:#fff;cursor:pointer;opacity:.5}
+  .poster-popup .close:hover{opacity:1}
+  .poster-popup .save-hint{position:absolute;bottom:40px;text-align:center;width:100%;font-size:13px;color:var(--text2)}
+
+  @media(max-width:520px){.page{padding:28px 16px 40px}.card{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- NAV -->
+  <div class="nav">
+    <img src="logo.png" alt="nexu">
+    <a class="nav-cta" href="https://github.com/nexu-io/nexu" target="_blank">⭐ 生成我的赛博分身</a>
+  </div>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="av"><div>T</div></div>
+    <div class="title"><span>Tom</span> 的赛博分身</div>
+
+  </div>
+
+  <!-- PROFILE TAGS -->
+  <div class="profile-tags">
+    <span class="ptag" data-type="company">🏢 nexu</span>
+    <span class="ptag" data-type="role">🎯 CEO / 产品</span>
+    <span class="ptag" data-type="level">⭐ Co-founder</span>
+    <span class="ptag" data-type="mbti">🧠 ENTJ</span>
+    <span class="ptag" data-type="vibe">🦉 午夜 CEO</span>
+    <span class="ptag" data-type="vibe">🔗 人形 RSS</span>
+    <span class="ptag" data-type="vibe">😏 [坏笑] 成瘾</span>
+    <span class="ptag" data-type="vibe">⚡ 先做再说</span>
+    <span class="ptag" data-type="vibe">💬 DDoS 沟通</span>
+    <span class="ptag" data-type="vibe">🤖 疑似 cron job</span>
+  </div>
+
+  <!-- SHARE ROW -->
+  <div class="share-section">
+    <a class="sh" href="#" onclick="shareToX(event)">𝕏 分享</a>
+    <a class="sh" href="#" onclick="shareToXHS(event)">📕 小红书</a>
+    <a class="sh" href="#" onclick="shareToJike(event)">⚡ 即刻</a>
+    <a class="sh" href="#" onclick="shareToWechat(event)">💬 微信</a>
+    <a class="sh" href="#" onclick="showPoster()">📸 海报</a>
+  </div>
+
+  <!-- ═══ SECTION 1: 锐评卡 ═══ -->
+  <div class="card">
+    <div class="label">🔥 AI 锐评</div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val">94</div>
+        <div class="stat-lbl">🐂🐴 牛马指数</div>
+      </div>
+    </div>
+
+    <div class="species">
+      <div class="species-name">🦉 午夜永动机</div>
+      <div class="species-sub">办公室物种鉴定</div>
+    </div>
+
+    <div class="bars">
+      <div class="bar-row">
+        <span class="bar-label">画饼力</span>
+        <div class="bar-track"><div class="bar-fill" style="width:88%;background:linear-gradient(90deg,var(--p1),var(--p2))"></div></div>
+        <span class="bar-val">88%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">信息轰炸</span>
+        <div class="bar-track"><div class="bar-fill" style="width:95%;background:linear-gradient(90deg,var(--p2),var(--p4))"></div></div>
+        <span class="bar-val">95%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">执行力</span>
+        <div class="bar-track"><div class="bar-fill" style="width:82%;background:linear-gradient(90deg,var(--p3),var(--p1))"></div></div>
+        <span class="bar-val">82%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">摸鱼力</span>
+        <div class="bar-track"><div class="bar-fill" style="width:8%;background:rgba(255,255,255,0.2)"></div></div>
+        <span class="bar-val">8%</span>
+      </div>
+    </div>
+
+    <div class="roast-text">
+      Tom，你的词汇量可以浓缩成三个词：「先搞」「可以」「这个链接你看一下」。你不是 CEO，你是一个<b>获得了管理权限的群聊机器人</b>。别人发一条消息深思熟虑，你发十条消息连标点都没想过。你在飞书上的存在感强到<b>同事以为公司被入侵了</b>。你的推特发了九千多条，平均每条思考时间约等于你眨眼的速度。你用 [坏笑] 的频率比正常人用句号还高——你的表情包使用习惯暴露了你骨子里就是一个<b>披着 CEO 外衣的网瘾少年</b>。不过话说回来，一个晚上十点还在为产品上头的人，要么是真热爱，要么是不知道关机键在哪。看了你的数据，我倾向于后者 <b>[坏笑]</b>
+    </div>
+  </div>
+
+  <!-- ═══ MULTI-DIMENSION ROAST ═══ -->
+  <div class="card">
+    <div class="label">💀 深度扒皮</div>
+    <div class="roast-dims"></div>
+  </div>
+
+  <style>
+    .roast-dim{padding:16px 0;border-bottom:1px solid var(--border)}
+    .roast-dim:last-child{border-bottom:none;padding-bottom:0}
+    .roast-dim:first-child{padding-top:0}
+    .dim-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .dim-icon{font-size:16px}
+    .dim-title{font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
+    .dim-text{font-size:14px;line-height:1.8;color:rgba(255,255,255,0.88)}
+    .dim-text b{color:var(--p1);font-weight:700}
+  </style>
+
+  <script>
+  const dims = [
+    {icon:'🔥',title:'Roast',text:'你的人生可以总结为一个 while(true) 循环：刷推特 → 发链接 → 说「先搞」→ 半夜在群里轰炸 → 第二天重复。你不是工作狂，你是<b>对「关机」这个概念过敏的人</b>。你 bio 写着「next to you」，但你发消息的频率说明你想直接<b>住在同事手机里</b>。恭喜你，你是第一个让飞书服务器以为遭受了 DDoS 攻击的 CEO。'},
+    {icon:'💪',title:'Strengths',text:'说实话，你的执行力是真的猛。别人还在画流程图的时候你已经上线了三个版本。你能在一条推特里塞进三个产品卖点还让人觉得不是广告。你的感染力强到<b>能让一个实习生相信他们正在改变世界</b>——虽然他们只是在改一个按钮的颜色。'},
+    {icon:'💀',title:'Weaknesses',text:'你有一种神奇的能力：<b>能同时进行五件事而没有一件完全做完</b>。你的注意力持续时间比 TikTok 短视频还短。你以为你在「多线程处理」，实际上你在「多线程制造 Bug」。而且你永远觉得「这个很快」——你说的「五分钟能搞定」，翻译成现实时间是三天。'},
+    {icon:'💰',title:'Money',text:'你对钱的态度可以概括为：<b>花钱是投资，省钱是对自己的不尊重</b>。你买了十几个 SaaS 订阅，大部分只用了免费试用期。你最大的财务成就是让 GitHub Star 数增长——因为那是唯一一个你能控制增长的数字。你不是在融资就是在想融资，你的银行账户是你最不愿意打开的 App。'},
+    {icon:'🐾',title:'Spirit Animal',text:'你是一只<b>摄入了过量咖啡因的松鼠</b>。眼睛永远亮着，爪子永远在动，嘴里叼着三颗坚果但已经忘了自己要把它们埋在哪。你的精力让人怀疑你是不是偷偷接了 220V 电源。你的同事是一群被你的能量辐射到失眠的猫头鹰。'},
+    {icon:'👥',title:"Other's Perspective",text:'你的同事私底下管你叫<b>「午夜闪电」</b>——不是因为你很快，是因为你总在夜里突然出现把人吓一跳。实习生觉得你是神，因为他们以为 CEO 都这样。老员工觉得你是谜，因为他们不理解一个人怎么可以同时这么聪明和这么让人崩溃。HR 觉得你是定时炸弹，因为你随时可能在群里说出不该说的话。'},
+    {icon:'⭐',title:'Famous Person',text:'你是<b>雷军和李佳琦的混合体</b>。雷军的激情、李佳琦的语速、两个人共同的特点是停不下来。你推销产品的方式是：先自己用到上瘾，然后逼着所有人都用。区别是雷军有百亿身家支撑他的情怀，你有的是一个还在 seed round 的公司和一腔热血。'},
+    {icon:'💊',title:'Life Suggestion',text:'认真的建议：去下载一个<b>屏幕使用时间管理 App</b>，然后在每晚 22 点自动锁定飞书。不是为了你，是为了你同事的心理健康。你的家人需要一个在场的人而不是一个在沙发上回消息的影子。另外，「先跑起来再说」不适用于人际关系——你不能先把朋友弄丢再说「我们复盘一下」。试试偶尔停下来，你会发现世界并不会因为你少发一条消息就塌掉，<b>但你同事的血压会感谢你</b>。'},
+  ];
+  const c=document.querySelector('.roast-dims');
+  dims.forEach(d=>{c.innerHTML+=`<div class="roast-dim"><div class="dim-hdr"><span class="dim-icon">${d.icon}</span><span class="dim-title">${d.title}</span></div><div class="dim-text">${d.text}</div></div>`});
+  </script>
+
+  <!-- ═══ SECTION 2: AI 对话 ═══ -->
+  <div class="card">
+    <div class="label">💬 和 Tom 的 AI 聊天</div>
+
+    <div class="chat-preview">
+      <div class="chat-msg user">
+        <div class="chat-av">👤</div>
+        <div class="chat-bubble">Tom，你怎么看加班？</div>
+      </div>
+      <div class="chat-msg bot">
+        <div class="chat-av">🦞</div>
+        <div class="chat-bubble">加班？我不叫加班，我叫「扩展工作时间」。你看，如果晚上十点在群里发消息叫加班，那我每天都在加班。但如果你把它理解为「CEO 的深度思考时间」，那就高级多了。先跑起来再说嘛 [坏笑]</div>
+      </div>
+      <div class="chat-msg user">
+        <div class="chat-av">👤</div>
+        <div class="chat-bubble">你觉得你最大的缺点是什么？</div>
+      </div>
+      <div class="chat-msg bot">
+        <div class="chat-av">🦞</div>
+        <div class="chat-bubble">缺点？我想想... 可能是太会甩链接了。但你换个角度想，我这是在帮团队节省搜索时间啊。你们应该感谢我才对。对了你看这个链接——</div>
+      </div>
+    </div>
+
+    <div class="try-ask">
+      <span>帮我 review 代码</span>
+      <span>你怎么看 AI Agent？</span>
+      <span>给我画个饼</span>
+    </div>
+
+    <div class="chat-cta">
+      <a href="https://github.com/nexu-io/nexu" target="_blank">⭐ Star 解锁对话 →</a>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 3: Skill 下载 ═══ -->
+  <div class="card">
+    <div class="label">📁 Tom.skill</div>
+
+    <div class="progress-section">
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div class="progress-text">
+        <span>蒸馏完成度</span>
+        <span>78%</span>
+      </div>
+    </div>
+
+    <div class="skill-actions">
+      <a class="skill-btn primary" href="https://github.com/nexu-io/nexu" target="_blank">⬇ 下载 Skill</a>
+      <button class="skill-btn" onclick="alert('需要安装 nexu 才能运行 Skill\n👉 github.com/nexu-io/nexu')">▶ 在 nexu 运行</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>Made with <a href="https://github.com/nexu-io/nexu">nexu</a> · ⭐ Star 生成你的赛博分身</p>
+  </div>
+
+</div>
+
+<!-- POSTER POPUP -->
+<div class="poster-popup" id="posterPopup" onclick="hidePoster(event)">
+  <div class="close" onclick="hidePoster(event)">✕</div>
+  <img src="roast-card.png" alt="Tom 的赛博分身">
+  <div class="save-hint">长按图片保存 · 分享到朋友圈</div>
+</div>
+
+<script>
+const shareText=`我被 AI 蒸馏了 😂\n\n牛马指数 94/100\n物种鉴定：午夜永动机\n"你的沟通方式不叫流式表达，叫对团队发起 DDoS 攻击"\n\n⭐ Star nexu 生成你的赛博分身 👉`;
+const shareUrl='https://distill-campaign.vercel.app/';
+function shareToX(e){e.preventDefault();window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,'_blank')}
+function shareToXHS(e){e.preventDefault();navigator.clipboard?.writeText(shareText+'\n'+shareUrl);showPoster();alert('文案已复制 ✅ 保存海报，打开小红书发布')}
+function shareToJike(e){e.preventDefault();navigator.clipboard?.writeText(shareText+'\n'+shareUrl);alert('文案已复制 ✅ 打开即刻 App 粘贴发布')}
+function shareToWechat(e){e.preventDefault();navigator.clipboard?.writeText(shareText+'\n'+shareUrl);showPoster();alert('文案已复制 ✅ 保存海报发朋友圈')}
+function showPoster(){document.getElementById('posterPopup').classList.add('show')}
+function hidePoster(e){if(e.target.id==='posterPopup'||e.target.classList.contains('close'))document.getElementById('posterPopup').classList.remove('show')}
+</script>
+</body>
+</html>
