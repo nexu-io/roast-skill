@@ -130,14 +130,6 @@ The agent will create an HTML file using the `assets/template.html` glass-morphi
 - 🦉 物种: 午夜永动机
 - Tags: 午夜CEO · 人形RSS · [坏笑]成瘾 · DDoS沟通
 
-### [玉伯 (Founder, YouMind)](examples/yubo/)
-
-> "你的推特不是社交媒体，是一本没有页码的禅宗语录"
-
-- 🐂🐴 牛马指数: 72/100
-- 🧘 物种: 赛博禅师
-- Tags: 推特诗人 · 自黑大师 · 鸡汤酿造师 · 同行点火员
-
 ---
 
 ## Project Structure
@@ -151,9 +143,7 @@ roast-skill/
 ├── assets/
 │   └── template.html     # Landing page template (glassmorphism dark theme)
 └── examples/
-    ├── tom/              # Tom (nexu CEO) roast example
-    │   └── roast.md
-    └── yubo/             # 玉伯 (YouMind Founder) roast example
+    └── tom/              # Tom (nexu CEO) roast example
         └── roast.md
 ```
 
