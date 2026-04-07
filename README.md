@@ -122,6 +122,22 @@ The agent will create an HTML file using the `assets/template.html` glass-morphi
 
 ## Examples
 
+### [Elon Musk](examples/elon/)
+
+> "你用一个字'Yes'获得 2400 万赞——不是因为你说得好，是因为你买了这个平台"
+
+- 🐂🐴 牛马指数: 99/100
+- 🦅 物种: 接入核电站的秃鹰
+- Tags: 火箭回收型创业家 · Meme投放机 · 10万条推文俱乐部 · DOGE部长
+
+### [Donald Trump](examples/trump/)
+
+> "你不是在治国，你是在经营一个只有两个按钮的情绪面板：伟大和灾难"
+
+- 🐂🐴 牛马指数: 85/100
+- 🦅 物种: 穿西装的美国秃鹰
+- Tags: MAGA永动机 · 全大写外交官 · 关税之王 · 认输力0%
+
 ### [Tom (CEO, nexu)](examples/tom/)
 
 > "你不是 CEO，你是一个获得了管理权限的群聊机器人"
@@ -143,7 +159,11 @@ roast-skill/
 ├── assets/
 │   └── template.html     # Landing page template (glassmorphism dark theme)
 └── examples/
-    └── tom/              # Tom (nexu CEO) roast example
+    ├── elon/             # Elon Musk roast
+    │   └── roast.md
+    ├── trump/            # Donald Trump roast
+    │   └── roast.md
+    └── tom/              # Tom (nexu CEO) roast
         └── roast.md
 ```
 
