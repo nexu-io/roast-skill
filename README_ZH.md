@@ -62,7 +62,23 @@
 
 🔗 **[在线 Demo: Tom 的赛博分身](https://distill-campaign.vercel.app/)**
 
-### Tom（CEO, nexu）
+### [Elon Musk](examples/elon/)
+
+> "你用一个字'Yes'获得 2400 万赞——不是因为你说得好，是因为你买了这个平台"
+
+- 🐂🐴 牛马指数: 99
+- 🦅 物种: 接入核电站的秃鹰
+- 标签: 火箭回收型创业家 · Meme投放机 · 10万条推文俱乐部 · DOGE部长
+
+### [Donald Trump](examples/trump/)
+
+> "你不是在治国，你是在经营一个只有两个按钮的情绪面板：伟大和灾难"
+
+- 🐂🐴 牛马指数: 85
+- 🦅 物种: 穿西装的美国秃鹰
+- 标签: MAGA永动机 · 全大写外交官 · 关税之王 · 认输力0%
+
+### [Tom (CEO, nexu)](examples/tom/)
 
 > "你不是 CEO，你是一个获得了管理权限的群聊机器人"
 
@@ -145,7 +161,11 @@ roast-skill/
 ├── assets/
 │   └── template.html     # 落地页模板（深色毛玻璃风格）
 └── examples/
-    └── tom/              # Tom (nexu CEO) 锐评示例
+    ├── elon/             # Elon Musk 锐评
+    │   └── roast.md
+    ├── trump/            # Donald Trump 锐评
+    │   └── roast.md
+    └── tom/              # Tom (nexu CEO) 锐评
         └── roast.md
 ```
 
