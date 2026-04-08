@@ -6,8 +6,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nexu](https://img.shields.io/badge/nexu-Skill-blueviolet)](https://github.com/nexu-io/nexu)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
-[![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-green)](https://agentskills.io)
 
 <br>
 
@@ -28,8 +26,7 @@
 
 [![Install on nexu](https://img.shields.io/badge/▶_Install_on_nexu-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsMTAgNSAxMC01TTIgMTJsMTAgNSAxMC01Ii8+PC9zdmc+)](https://github.com/nexu-io/roast-skill)
 
-> 复制链接发给你的 nexu agent：`https://github.com/nexu-io/roast-skill`<br>
-> 或者命令行：`openclaw skill install https://github.com/nexu-io/roast-skill`
+> 复制链接发给你的 nexu agent：`https://github.com/nexu-io/roast-skill`
 
 [工作原理](#工作原理) · [安装](#安装) · [使用](#使用) · [示例](#示例) · [English](README_EN.md)
 
@@ -120,25 +117,12 @@
 
 ## 安装
 
-### nexu / OpenClaw（推荐）
+### nexu（推荐）
 
 直接把 GitHub 链接发给你的 nexu agent：
 
 ```
 帮我安装这个 skill：https://github.com/nexu-io/roast-skill
-```
-
-或用命令行：
-
-```bash
-openclaw skill install https://github.com/nexu-io/roast-skill
-```
-
-### Claude Code
-
-```bash
-mkdir -p .claude/skills
-git clone https://github.com/nexu-io/roast-skill .claude/skills/roast-skill
 ```
 
 ### 手动安装
