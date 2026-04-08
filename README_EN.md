@@ -1,6 +1,6 @@
 <div align="center">
 
-# Work Horse Roast
+# Work Horse Roast Skill
 
 > *"AI distilled all your data and decided to tell the truth"*
 
