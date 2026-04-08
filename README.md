@@ -24,6 +24,13 @@
 它会生成一份**毒舌但精准的锐评报告** — 8 个维度、6 种修辞武器、不留情面<br>
 还能一键生成赛博朋克风格的分享落地页
 
+<br>
+
+[![Install on nexu](https://img.shields.io/badge/▶_Install_on_nexu-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsMTAgNSAxMC01TTIgMTJsMTAgNSAxMC01Ii8+PC9zdmc+)](https://github.com/nexu-io/roast-skill)
+
+> 复制链接发给你的 nexu agent：`https://github.com/nexu-io/roast-skill`<br>
+> 或者命令行：`openclaw skill install https://github.com/nexu-io/roast-skill`
+
 [工作原理](#工作原理) · [安装](#安装) · [使用](#使用) · [示例](#示例) · [English](README_EN.md)
 
 </div>
