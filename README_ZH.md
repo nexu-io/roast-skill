@@ -6,49 +6,73 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nexu](https://img.shields.io/badge/nexu-Skill-blueviolet)](https://github.com/nexu-io/nexu)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-green)](https://agentskills.io)
 
 <br>
 
-给你的 AI agent 一个推特链接或飞书消息记录<br>
-它会生成一份**毒舌但精准的锐评报告**，8 个维度深度扒皮<br>
+你的老板凌晨两点发鸡汤，管这叫「以身作则」？<br>
+你的产品经理写 500 字飞书消息，其实一句话能说完？<br>
+你的 Tech Lead review 代码只会打「LGTM」？<br>
+你的 CEO 每周一换方向，管这叫「敏捷」？<br>
+
+**让 AI 读完他们的数据，替大家说出心里话。**
+
+<br>
+
+给 AI agent 一个推特链接、飞书消息记录、或者任何公开数据<br>
+它会生成一份**毒舌但精准的锐评报告** — 8 个维度、6 种修辞武器、不留情面<br>
 还能一键生成赛博朋克风格的分享落地页
 
-[功能](#功能) · [安装](#安装) · [使用](#使用) · [示例](#示例) · [English](README.md)
+[工作原理](#工作原理) · [安装](#安装) · [使用](#使用) · [示例](#示例) · [English](README.md)
 
 </div>
 
 ---
 
-## 功能
+> 🔥 **锐评.skill** 是 [nexu](https://github.com/nexu-io/nexu) 生态的一部分 — Agent-Native 平台，AI 站在你旁边而不是替代你。偶尔也会站在你旁边锐评你一下。
 
-给 AI agent 喂入一个人的公开数据（推特、飞书消息、文章），生成：
+---
+
+## 你会得到什么
 
 | 输出 | 说明 |
 |------|------|
-| **Profile 标签** | 8-12 个标签，分 5 种类型（公司/岗位/职级/MBTI/性格） |
-| **牛马指数** | 0-100 工作强度评分 |
-| **物种鉴定** | 荒诞动物比喻（如"午夜永动机""赛博禅师"） |
-| **能力条** | 4 项自定义指标，命名要有梗 |
-| **主 Roast** | 150-250 字毒舌吐槽，第二人称直接开怼 |
-| **8 维度深度扒皮** | Roast / 优势 / 弱点 / 金钱观 / 灵魂动物 / 同事视角 / 名人对标 / 人生建议 |
-| **AI 对话示例** | 2 轮模拟对话，还原本人说话风格 |
-| **落地页** | 可部署的 HTML，深色毛玻璃赛博风 |
+| 🏷️ **Profile 标签** | 8-12 个标签，5 种类型：公司 / 岗位 / 职级 / MBTI / 性格 |
+| 🐂 **牛马指数** | 0-100 工作强度评分 |
+| 🦅 **物种鉴定** | 荒诞动物比喻（"接入核电站的秃鹰""午夜永动机"） |
+| 📊 **能力条** | 4 项自定义指标，命名要有梗（如"交付力: 43%""大写锁定力: 100%"） |
+| 🔥 **主 Roast** | 150-250 字毒舌吐槽，第二人称直接开怼，不留余地 |
+| 🔬 **8 维度深度扒皮** | Roast / 优势 / 弱点 / 金钱观 / 灵魂动物 / 同事视角 / 名人对标 / 人生建议 |
+| 💬 **AI 对话示例** | 2 轮模拟对话，还原本人说话风格 |
+| 🌐 **落地页** | 可部署的 HTML — 深色毛玻璃赛博风，分享即传播 |
+
+---
+
+## 工作原理
+
+```
+输入数据 → 行为分析 → 特征提取 → 修辞选择 → 锐评生成
+                                        ↓
+                                 6 种武器 × 8 个维度
+                                        ↓
+                                 落地页 → 分享 🚀
+```
 
 ### 🎯 6 大阴阳怪气修辞武器
 
-每段吐槽混合使用多种技巧，组合连招比单招更毒：
+每段吐槽混合使用多种技巧，**组合连招比单招更毒**：
 
-| 武器 | 说明 | 示例 |
-|------|------|------|
-| **以夸代讽** | 表面夸赞，暗藏刀子 | "你的执行力真是'无与伦比'，一天能启动五个项目——完成数是零" |
-| **类比讽刺** | 荒诞比喻暗示不足 | "你这逻辑，比我家猫玩的毛线团还乱" |
-| **反问质疑** | 反问即答案 | "你确定这叫'纯粹分享'？还是在用佛系话术做增长？" |
-| **借物喻人** | 用物品映射行为 | "你的推特就像机场鸡汤书——标题震撼，内容随缘" |
-| **调侃习惯** | 真实习惯放大到荒诞 | "你的换行习惯已从排版风格进化成了人格特征" |
-| **引典用俗** | 典故包装毒舌 | "佛曰众生平等，但看了你的推特，佛可能会改口" |
+| # | 武器 | 原理 | 示例 |
+|---|------|------|------|
+| 1 | **以夸代讽** | 表面夸赞，暗藏刀子 | "你的执行力真是'无与伦比'，一天能启动五个项目——完成数是零" |
+| 2 | **类比讽刺** | 荒诞比喻暗示不足 | "你这逻辑，比我家猫玩的毛线团还乱" |
+| 3 | **反问质疑** | 反问即答案 | "你确定这叫'纯粹分享'？还是用佛系话术做增长？" |
+| 4 | **借物喻人** | 用物品映射行为 | "你的推特就像机场鸡汤书——标题震撼，内容随缘" |
+| 5 | **调侃习惯** | 真实习惯放大到荒诞 | "你的换行习惯已从排版风格进化成了人格特征" |
+| 6 | **引典用俗** | 典故包装毒舌 | "佛曰众生平等，但看了你的推特，佛可能会改口" |
 
-**组合连招更致命**：
+**组合连招示例**：
 
 > **夸讽 + 类比**："你的勤奋真让人感动——每天发六条鸡汤的勤奋程度，堪比寺庙门口卖香火的大妈"
 >
@@ -60,31 +84,30 @@
 
 ## 示例
 
-🔗 **[在线 Demo: Tom 的赛博分身](https://distill-campaign.vercel.app/)**
+### 🔗 [在线 Demo: Tom 的赛博分身](https://distill-campaign.vercel.app/)
 
 ### [Elon Musk](examples/elon/)
 
-> "你用一个字'Yes'获得 2400 万赞——不是因为你说得好，是因为你买了这个平台"
+> "你用一个字'Yes'获得 2400 万赞——不是因为你说得好，是因为你**买了这个平台**"
 
-- 🐂🐴 牛马指数: 99
-- 🦅 物种: 接入核电站的秃鹰
-- 标签: 火箭回收型创业家 · Meme投放机 · 10万条推文俱乐部 · DOGE部长
+- 🐂🐴 牛马指数: 99 · 🦅 物种: 接入核电站的秃鹰
+- 标签: `火箭回收型创业家` · `Meme投放机` · `10万条推文俱乐部` · `DOGE部长`
+- 交付力: 43% · Meme力: 97% · 睡眠力: 6%
 
 ### [Donald Trump](examples/trump/)
 
-> "你不是在治国，你是在经营一个只有两个按钮的情绪面板：伟大和灾难"
+> "你不是在治国，你是在经营一个**只有两个按钮的情绪面板：伟大和灾难**"
 
-- 🐂🐴 牛马指数: 85
-- 🦅 物种: 穿西装的美国秃鹰
-- 标签: MAGA永动机 · 全大写外交官 · 关税之王 · 认输力0%
+- 🐂🐴 牛马指数: 85 · 🦅 物种: 穿西装的美国秃鹰
+- 标签: `MAGA永动机` · `全大写外交官` · `关税之王` · `认输力0%`
+- 口号力: 99% · 大写锁定力: 100% · 外交委婉力: 3%
 
-### [Tom (CEO, nexu)](examples/tom/)
+### [Tom — CEO, nexu](examples/tom/)
 
-> "你不是 CEO，你是一个获得了管理权限的群聊机器人"
+> "你不是 CEO，你是一个**获得了管理权限的群聊机器人**"
 
-- 🐂🐴 牛马指数: 94
-- 🦉 物种: 午夜永动机
-- 标签: 午夜CEO · 人形RSS · [坏笑]成瘾 · DDoS沟通 · 疑似 cron job
+- 🐂🐴 牛马指数: 94 · 🦉 物种: 午夜永动机
+- 标签: `午夜CEO` · `人形RSS` · `[坏笑]成瘾` · `DDoS沟通` · `疑似 cron job`
 
 ---
 
@@ -103,6 +126,8 @@ mkdir -p .claude/skills
 git clone https://github.com/nexu-io/roast-skill .claude/skills/roast-skill
 ```
 
+无需安装依赖 — 纯 prompt skill。
+
 ---
 
 ## 使用
@@ -112,16 +137,16 @@ git clone https://github.com/nexu-io/roast-skill .claude/skills/roast-skill
 对你的 agent 说：
 
 ```
-锐评一下这个人：https://x.com/lifesinger
+锐评一下这个人：https://x.com/elonmusk
 ```
 
 Agent 会自动：
 1. 抓取用户 profile + 最近推文
 2. 分析行为模式、语言风格、发推习惯
-3. 生成完整锐评报告
-4. 可选：生成可分享的落地页
+3. 生成完整锐评报告（8 维度）
+4. 可选：生成可分享的赛博分身落地页
 
-### 完整锐评（加飞书数据）
+### 完整锐评（加飞书/Slack 数据）
 
 ```
 用 roast-skill 锐评一下 [名字]
@@ -134,7 +159,7 @@ Agent 会自动：
 把锐评结果生成一个落地页，用赛博分身模板
 ```
 
-Agent 会用 `assets/template.html` 模板生成 HTML，可一键部署到 Vercel。
+→ 用 `assets/template.html` 模板生成 HTML，可一键部署到 Vercel。
 
 ---
 
@@ -144,9 +169,20 @@ Agent 会用 `assets/template.html` 模板生成 HTML，可一键部署到 Verce
 |------|:-------:|:-------:|
 | Twitter/X | ✅ twitter-cli | ✅ 粘贴推文 |
 | 飞书 | ✅ API | ✅ 粘贴消息 |
-| 文章 | ✅ URL 抓取 | ✅ 粘贴文本 |
+| Slack | ✅ API | ✅ 粘贴消息 |
+| 文章/URL | ✅ 抓取 | ✅ 粘贴文本 |
 | GitHub | ✅ gh CLI | ✅ 粘贴 README |
 | 播客 | — | ✅ 粘贴文字稿 |
+
+---
+
+## 注意事项
+
+- **原材料质量 = 锐评质量**：真实聊天记录 + 推文 >> 纯手动描述
+- 建议优先收集：**决策类回复** > **他主动写的长文** > 日常水群
+- 公共人物效果最好（数据多、模式明显）
+- 锐评的目标是**又气又笑** — funny > mean，阴阳怪气 > 直接骂
+- 中文锐评文化 + 双语 agent 效果最佳
 
 ---
 
@@ -171,47 +207,36 @@ roast-skill/
 
 ---
 
-## 工作原理
+## Star History
 
-```
-输入数据 → 行为分析 → 特征提取 → 修辞选择 → 锐评生成
-                                        ↓
-                                 6 种武器 × 8 个维度
-                                        ↓
-                                 落地页（可选）
-```
-
-核心原则：
-1. **数据驱动**：每个吐槽点必须有数据支撑
-2. **精准 > 广泛**：抓 3 个点说透 > 10 个点蜻蜓点水
-3. **阴阳怪气 > 直接骂**：不带脏字句句扎心
-4. **以夸代讽打底**：表面夸赞的壳，毒性翻倍
-5. **组合连招**：每段至少 2 种修辞武器
+<a href="https://www.star-history.com/?repos=nexu-io%2Froast-skill&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=nexu-io/roast-skill&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=nexu-io/roast-skill&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=nexu-io/roast-skill&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ---
 
 ## 贡献
 
 欢迎 PR！你可以贡献：
-- 新的锐评示例（放在 `examples/`）
-- 翻译
-- 落地页主题变体
-- 新的修辞武器模板
-
----
-
-## License
-
-MIT License — 请文明锐评。
+- 🔥 新的锐评示例（`examples/`）
+- 🌐 翻译
+- 🎨 落地页主题变体（`assets/`）
+- ⚔️ 新的修辞武器模板
 
 ---
 
 <div align="center">
 
+MIT License © [nexu](https://github.com/nexu-io)
+
 Made with 🔥 by [nexu](https://github.com/nexu-io/nexu)
 
-**站在你旁边的 AI —— 偶尔也会锐评你一下**
+**站在你旁边的 AI — 偶尔也会锐评你一下**
 
-⭐ Star 这个 repo · ⭐ [Star nexu](https://github.com/nexu-io/nexu)
+⭐ [Star 这个 repo](https://github.com/nexu-io/roast-skill) · ⭐ [Star nexu](https://github.com/nexu-io/nexu)
 
 </div>
