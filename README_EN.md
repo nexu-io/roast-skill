@@ -24,6 +24,13 @@ Give your AI agent a Twitter/X link, Feishu chat logs, or any public data<br>
 Get back a **savage, data-driven roast** — 8 dimensions, 6 rhetoric weapons, zero mercy<br>
 Plus a cyberpunk landing page that's begging to be shared
 
+<br>
+
+[![Install on nexu](https://img.shields.io/badge/▶_Install_on_nexu-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsMTAgNSAxMC01TTIgMTJsMTAgNSAxMC01Ii8+PC9zdmc+)](https://github.com/nexu-io/roast-skill)
+
+> Send this link to your nexu agent: `https://github.com/nexu-io/roast-skill`<br>
+> Or via CLI: `openclaw skill install https://github.com/nexu-io/roast-skill`
+
 [How It Works](#how-it-works) · [Install](#install) · [Usage](#usage) · [Examples](#examples) · [中文](README.md)
 
 </div>
