@@ -109,10 +109,18 @@ Every roast combines multiple techniques for maximum impact:
 
 ## Install
 
-### nexu (OpenClaw)
+### nexu / OpenClaw (Recommended)
+
+Just send the GitHub link to your nexu agent:
+
+```
+Install this skill: https://github.com/nexu-io/roast-skill
+```
+
+Or via CLI:
 
 ```bash
-git clone https://github.com/nexu-io/roast-skill ~/.nexu/skills/roast-skill
+openclaw skill install https://github.com/nexu-io/roast-skill
 ```
 
 ### Claude Code
@@ -122,7 +130,13 @@ mkdir -p .claude/skills
 git clone https://github.com/nexu-io/roast-skill .claude/skills/roast-skill
 ```
 
-No dependencies required — pure prompt skill.
+### Manual
+
+```bash
+git clone https://github.com/nexu-io/roast-skill <your agent skills directory>
+```
+
+No dependencies — pure prompt skill, works immediately after install.
 
 ---
 
@@ -155,7 +169,7 @@ Data: Feishu messages [N] + Twitter @[username]
 Generate a landing page for the roast, use the cyber avatar template
 ```
 
-→ Creates HTML using `assets/template.html`, can deploy to Vercel in one command.
+→ The agent will create an HTML file using the `assets/template.html` template and handle deployment automatically.
 
 ---
 

@@ -113,10 +113,18 @@
 
 ## 安装
 
-### nexu (OpenClaw)
+### nexu / OpenClaw（推荐）
+
+直接把 GitHub 链接发给你的 nexu agent：
+
+```
+帮我安装这个 skill：https://github.com/nexu-io/roast-skill
+```
+
+或用命令行：
 
 ```bash
-git clone https://github.com/nexu-io/roast-skill ~/.nexu/skills/roast-skill
+openclaw skill install https://github.com/nexu-io/roast-skill
 ```
 
 ### Claude Code
@@ -126,7 +134,13 @@ mkdir -p .claude/skills
 git clone https://github.com/nexu-io/roast-skill .claude/skills/roast-skill
 ```
 
-无需安装依赖 — 纯 prompt skill。
+### 手动安装
+
+```bash
+git clone https://github.com/nexu-io/roast-skill <你的 agent skills 目录>
+```
+
+无需安装依赖 — 纯 prompt skill，装完即用。
 
 ---
 
@@ -159,7 +173,7 @@ Agent 会自动：
 把锐评结果生成一个落地页，用赛博分身模板
 ```
 
-→ 用 `assets/template.html` 模板生成 HTML，可一键部署到 Vercel。
+→ Agent 会用 `assets/template.html` 模板生成 HTML 落地页，自动处理部署。
 
 ---
 
