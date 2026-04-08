@@ -25,7 +25,6 @@ Plus a cyberpunk landing page that's begging to be shared
 
 <br>
 
-[![Install on nexu](https://img.shields.io/badge/▶_Install_on_nexu-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsMTAgNSAxMC01TTIgMTJsMTAgNSAxMC01Ii8+PC9zdmc+)](https://github.com/nexu-io/roast-skill)
 
 > Send this link to your nexu agent: `https://github.com/nexu-io/roast-skill`
 
