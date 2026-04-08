@@ -1,25 +1,26 @@
 <div align="center">
 
-# roast.skill
+# Work Horse Roast
 
-> *"AI read all your messages and decided to tell the truth"*
+> *"AI distilled all your data and decided to tell the truth"*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nexu](https://img.shields.io/badge/nexu-Skill-blueviolet)](https://github.com/nexu-io/nexu)
 
 <br>
 
-Your boss posts motivational quotes at 2 AM and calls it "leadership"?<br>
-Your PM writes 500-word Feishu messages that could be one sentence?<br>
-Your tech lead's code reviews are just "LGTM" on everything?<br>
-Your CEO changes direction every Monday and calls it "agile"?<br>
+You reply to 200 Feishu messages a day and call it "efficient collaboration"?<br>
+You share industry articles at 2 AM and call it "being a learner"?<br>
+You rewrote that proposal 8 times over the weekend and call it "pursuing excellence"?<br>
+Your year-end review is 3000 words, but what you actually did fits in one sentence?<br>
 
-**Let AI read their data and say what everyone's thinking.**
+**Let AI distill your own data and generate a savage but accurate work-horse portrait.**<br>
+You can also roast your colleagues while you're at it 😏
 
 <br>
 
-Give your AI agent a Twitter/X link, Feishu chat logs, or any public data<br>
-Get back a **savage, data-driven roast** — 8 dimensions, 6 rhetoric weapons, zero mercy<br>
+Give your AI agent your Twitter/X link, Feishu chat logs, or any public data<br>
+It'll distill your work persona, then generate an **8-dimension roast report** — 6 rhetoric weapons, zero mercy<br>
 Plus a cyberpunk landing page that's begging to be shared
 
 <br>
@@ -34,7 +35,7 @@ Plus a cyberpunk landing page that's begging to be shared
 
 ---
 
-> 🔥 **roast.skill** is part of the [nexu](https://github.com/nexu-io/nexu) ecosystem — an Agent-Native platform where AI stands next to you, not instead of you. Sometimes it stands next to you and roasts you.
+> 🔥 **Work Horse Roast** is part of the [nexu](https://github.com/nexu-io/nexu) ecosystem — an Agent-Native platform where AI stands next to you, not instead of you. Sometimes it stands next to you and roasts you.
 
 ---
 
@@ -133,25 +134,30 @@ No dependencies — pure prompt skill, works immediately after install.
 
 ## Usage
 
-### Quick Roast (from Twitter)
+### Roast Yourself (Core)
 
 Tell your agent:
 
 ```
-Roast this person: https://x.com/elonmusk
+Roast myself
 ```
 
 The agent will:
-1. Fetch profile + recent tweets
-2. Analyze behavior patterns, language style, posting habits
-3. Generate full roast report with 8 dimensions
-4. Create a shareable landing page (optional)
+1. Read your messages across all shared Feishu groups
+2. Distill your work persona and behavior patterns
+3. Generate full roast report (Work Horse Index + 8-dimension deep dive)
+4. Create a shareable cyberpunk landing page (optional)
 
-### Full Roast (with Feishu/Slack data)
+### Roast a Colleague
 
 ```
-Use roast-skill to roast [name]
-Data: Feishu messages [N] + Twitter @[username]
+Roast Zhang San
+```
+
+The agent auto-fetches their Feishu messages from shared groups. Add a Twitter link for richer results:
+
+```
+Roast Zhang San, Twitter: https://x.com/zhangsan
 ```
 
 ### Generate Landing Page
