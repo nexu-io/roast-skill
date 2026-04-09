@@ -234,25 +234,32 @@ Token 换取成功后才标记 "飞书 ✅"。
 
 > 只有当用户明确说"不想授权"或"跳过"时，才标记为 Bot token 模式（飞书数据会少一些）。
 
-#### 检测项 2.6: 飞书消息读取实测验证（⛔ 关键 — 权限有不代表能读）
+#### 检测项 2.6: 飞书完整能力验证（⛔ 关键 — 一条命令检测所有问题）
 
-> ⚠️ **有些飞书应用虽然有权限（scope 列表齐全），但因为应用类型是 b2c/b2b，实际上无法读取群消息。所以必须做一次实际测试调用。**
+> ⚠️ **不要自己解读 feishu_app_scopes 的结果来判断能力。** 直接运行验证脚本，它会告诉你缺什么、怎么修。
 
 **执行命令：**
 ```bash
 python3 <skill_dir>/scripts/feishu_fetch.py --verify
 ```
 
-**根据返回结果判断：**
-- `"canRead": true` → ✅ 实测验证通过，消息可以读取
-- `"canRead": false, "error": "no_chats"` → ⚠️ Bot 不在任何群里，引导用户把 Bot 加到目标群
-- `"canRead": false, "error": "read_failed"` → ⛔ **权限有但实际读不了**（通常是 b2c/b2b 应用类型限制）。告诉用户：
-```
-⚠️ 飞书应用的权限已配置，但当前应用类型无法读取群聊消息（外部群/跨组织群限制）。
+**脚本会返回 JSON 报告，包含以下字段：**
+- `credentials`: 凭证是否找到
+- `botCanListChats`: Bot 能否列出群聊
+- `botCanReadMessages`: Bot 能否读取消息
+- `oauthTokenValid`: OAuth token 是否有效
+- `userCanListChats`: 用户身份能否列出群聊
+- `missingPermissions`: 缺少的权限列表
+- `guidance`: 给用户的引导建议
 
-解决方法：需要把 Bot 拉到目标人所在的内部群里，我才能读取消息。
-或者你可以直接转发几条 TA 的飞书消息给我，我用这些数据来生成锐评。
-```
+**根据报告处理（agent 直接照做）：**
+
+1. **`guidance` 数组不为空** → ⛔ STOP，把 `guidance` 里的内容**直接发给用户**（它们已经是用户可读的中文引导）
+2. **`guidance` 为空** → ✅ 飞书能力完整，继续
+3. **`oauthTokenValid` 为 false** → 需要引导 OAuth 授权（进入检测项 2.5 的授权流程）
+4. **`missingPermissions` 有内容** → 告诉用户缺哪些权限，引导到教程补齐
+
+> 💡 **这条命令替代了之前的手动权限检查。** agent 不需要自己解读 scope 列表，脚本全部搞定。
 
 #### 检测项 2.7: 飞书性别读取（可选，静默检测，不展示给用户）
 - 在 `feishu_app_scopes` 返回的权限列表中查找 `contact:user.gender:readonly`

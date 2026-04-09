@@ -470,35 +470,82 @@ def main():
     # --- Main fetch flow ---
     # --- Verify mode: quick test if messages can actually be read ---
     if args.verify:
+        # Full capability report for Step 0
+        report = {
+            "credentials": False,
+            "botCanListChats": False,
+            "botCanReadMessages": False,
+            "oauthTokenValid": False,
+            "userCanListChats": False,
+            "missingPermissions": [],
+            "errors": [],
+            "guidance": [],
+        }
+
+        # 1. Check credentials
         if not args.app_id or not args.app_secret:
-            print('{"canRead": false, "error": "no_credentials"}')
+            report["errors"].append("no_credentials")
+            report["guidance"].append("飞书凭证未找到，请先配置飞书渠道：https://docs.nexu.io/zh/guide/channels/feishu")
+            print(json.dumps(report, ensure_ascii=False))
             sys.exit(1)
+        report["credentials"] = True
+
+        # 2. Check bot (tenant) capabilities
         token = get_tenant_token(args.app_id, args.app_secret)
         if not token:
-            print('{"canRead": false, "error": "token_failed"}')
+            report["errors"].append("tenant_token_failed")
+            report["guidance"].append("获取 Bot token 失败，请检查 App Secret 是否正确")
+            print(json.dumps(report, ensure_ascii=False))
             sys.exit(1)
+
         headers = {"Authorization": f"Bearer {token}"}
-        # Get first chat bot is in
         r = requests.get("https://open.feishu.cn/open-apis/im/v1/chats?page_size=1", headers=headers)
         data = r.json()
-        chats = data.get("data", {}).get("items", [])
-        if not chats:
-            print('{"canRead": false, "error": "no_chats", "reason": "Bot is not in any group chat"}')
-            sys.exit(0)
-        chat_id = chats[0]["chat_id"]
-        chat_name = chats[0].get("name", "unknown")
-        # Try to read 1 message
-        msg_r = requests.get(
-            f"https://open.feishu.cn/open-apis/im/v1/messages?container_id_type=chat&container_id={chat_id}&page_size=1",
-            headers=headers,
-        )
-        msg_data = msg_r.json()
-        if msg_data.get("code") == 0:
-            msg_count = len(msg_data.get("data", {}).get("items", []))
-            print(json.dumps({"canRead": True, "testChat": chat_name, "messagesFound": msg_count}))
+        if data.get("code") == 0:
+            report["botCanListChats"] = True
+            chats = data.get("data", {}).get("items", [])
+            if chats:
+                chat_id = chats[0]["chat_id"]
+                msg_r = requests.get(
+                    f"https://open.feishu.cn/open-apis/im/v1/messages?container_id_type=chat&container_id={chat_id}&page_size=1",
+                    headers=headers,
+                )
+                if msg_r.json().get("code") == 0:
+                    report["botCanReadMessages"] = True
+                else:
+                    report["errors"].append(f"bot_read_failed: {msg_r.json().get('msg', 'unknown')}")
+            else:
+                report["errors"].append("bot_no_chats")
         else:
-            err_msg = msg_data.get("msg", "unknown error")
-            print(json.dumps({"canRead": False, "error": "read_failed", "testChat": chat_name, "detail": err_msg}))
+            report["errors"].append(f"bot_list_chats_failed: {data.get('msg', 'unknown')}")
+
+        # 3. Check OAuth (user) capabilities
+        user_token = load_cached_user_token(args.app_id, args.app_secret)
+        if user_token:
+            uh = {"Authorization": f"Bearer {user_token}"}
+            ur = requests.get("https://open.feishu.cn/open-apis/im/v1/chats?page_size=1", headers=uh)
+            if ur.json().get("code") == 0:
+                report["oauthTokenValid"] = True
+                report["userCanListChats"] = True
+            else:
+                err = ur.json().get("msg", "")
+                report["oauthTokenValid"] = True  # token works but permission missing
+                if "im:chat:readonly" in err or "privilege" in err.lower():
+                    report["missingPermissions"].append("im:chat:readonly (user)")
+                report["errors"].append(f"user_list_chats_failed: {err}")
+        else:
+            report["oauthTokenValid"] = False
+            report["missingPermissions"].append("OAuth 未授权")
+
+        # 4. Generate guidance
+        if not report["oauthTokenValid"]:
+            report["guidance"].append("需要 OAuth 授权才能读取用户所有群消息（数据更多、锐评更准）")
+        if report["oauthTokenValid"] and not report["userCanListChats"]:
+            report["guidance"].append("OAuth token 有效但缺少 user 级别权限，参照教程补齐：https://docs.nexu.io/zh/guide/channels/feishu")
+        if not report["botCanReadMessages"] and not report["userCanListChats"]:
+            report["guidance"].append("当前无法读取任何群消息，请先补齐权限或提供其他数据源")
+
+        print(json.dumps(report, ensure_ascii=False))
         sys.exit(0)
 
     if not args.target_user:
