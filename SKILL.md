@@ -320,6 +320,7 @@ Step 3 完成后**立即**执行此步骤，不要：
   "posterSpeciesEmoji": "🦉",
   "posterSpeciesName": "午夜永动机",
   "posterSpeciesSub": "办公室物种鉴定",
+  "portraitId": "portrait-1",
   "ctaText": "⭐ 生成我的牛马锐评",
   "installText": "复制链接发给你的 nexu agent：https://github.com/nexu-io/roast-skill"
 }
@@ -330,45 +331,56 @@ Step 3 完成后**立即**执行此步骤，不要：
 | 字段 | 类型 | 限制 | 说明 |
 |------|------|------|------|
 | `title` | string | 必填 | 目标人名 |
-| `subtitle` | string | 必填 | 「牛马指数 XX/100 — 物种名」 |
-| `tags` | string[] | 1-8 个 | 纯字符串，按顺序映射 company/role/level/mbti/vibe |
-| `metrics` | object[] | 4-6 个 | [0] 为牛马指数（value 纯数字如 "92"），[1]+ 为能力条（value 带 % 如 "95%"） |
+| `subtitle` | string | 15-30字 | 必须含「牛马指数」「/100」和「—」，格式：「牛马指数 XX/100 — 物种名」 |
+| `tags` | string[] | 1-8 个 | 纯字符串，**每个 2-8 字**，按顺序映射 company/role/level/mbti/vibe |
+| `metrics` | object[] | 4-6 个 | [0] 为牛马指数（value 纯数字如 "92"），[1]+ 为能力条（value 带 % 如 "95%"）。**label 6-12 字** |
 | `description` | string | 必填 | **纯文本**，不要 markdown/换行符/加粗，150-250 字 |
-| `qaCards` | object[] | 2-3 个 | question=维度标题，answer=**纯文本**内容 |
+| `qaCards` | object[] | 2-3 个 | question=维度标题（**3-8 字**），answer=**纯文本**内容（**80-150 字**） |
 | `dialogs` | object[] | 3-6 个 | speaker 只能是 "bot" 或 "user"，text 为纯文本 |
-| `posterSpeciesEmoji` | string | 可选 | 物种 emoji，默认 🦉 |
-| `posterSpeciesName` | string | 可选 | 物种名，默认"午夜永动机" |
-| `posterSpeciesSub` | string | 可选 | 副标题，默认"办公室物种鉴定" |
-| `ctaText` | string | 必填 | CTA 按钮文字 |
-| `installText` | string | 必填 | 安装命令文字 |
+| `posterSpeciesEmoji` | string | 必填 | 物种 emoji |
+| `posterSpeciesName` | string | 必填 | 物种名 |
+| `posterSpeciesSub` | string | 必填 | 副标题，如"办公室物种鉴定" |
+| `portraitId` | string | 必填 | 头像 ID，可选值：portrait-1 ~ portrait-7 |
+| `ctaText` | string | **固定值** | 必须为 "⭐ 生成我的牛马锐评" |
+| `installText` | string | **固定值** | 必须为 "复制链接发给你的 nexu agent：https://github.com/nexu-io/roast-skill" |
 
 **最常见的错误：**
 - ❌ `description` 里放 markdown 格式（`**加粗**`、`\n`）→ 页面显示乱码
 - ❌ `description` 里放 8 个维度的全部内容 → 太长，页面撑爆
 - ❌ `tags` 用对象格式 `{"text":"x","type":"y"}` → 必须是纯字符串
+- ❌ `tags` 单个超过 8 字 → 会被校验拒绝
+- ❌ `metrics[].label` 超过 12 字 → 会被校验拒绝
 - ❌ `qaCards` 放 8 个维度 → 最多 3 个，挑最有梗的
 - ❌ 忘了 `dialogs` 字段 → 必须 3-6 条对话
-- ❌ 忘了 `posterSpeciesEmoji/Name/Sub` → 海报会用默认值
+- ❌ 忘了 `portraitId` → 必填，从 portrait-1 到 portrait-7 选一个
+- ❌ `ctaText` / `installText` 用了自定义值 → 必须用固定值
 ```
 
 2. 将 content.json 保存到 `/tmp/roast_content_{名字拼音}.json`
 
-3. 调用 page-deploy skill 部署：
+3. 调用 deploy-skill 部署（优先方案）：
 ```bash
-node <page-deploy-skill-dir>/scripts/page_deploy.js submit \
+node <deploy-skill-dir>/scripts/deploy_skill.js submit \
   --template-id distill-campaign \
   --content-file /tmp/roast_content_{名字拼音}.json \
   --bot-id <BOT_ID> \
   --chat-id <CHAT_ID> \
   --chat-type <CHAT_TYPE> \
-  --channel <CHANNEL> \
-  --session-key <SESSION_KEY> \
-  --user-id <USER_ID>
+  --channel <CHANNEL>
 ```
 
-4. 如果没有 page-deploy skill，使用以下 fallback 方案（按优先级）：
-   - **Vercel 部署**：将 `template.html` 填入数据后保存到临时目录，用 `npx vercel --yes` 部署
-   - **本地文件**：保存到 `/tmp/roast_{名字拼音}.html`，告诉用户文件路径
+4. 提交后等待部署完成：
+```bash
+node <deploy-skill-dir>/scripts/deploy_skill.js wait-and-deliver \
+  --job-id <JOB_ID> \
+  --poll-interval-ms 5000 \
+  --max-polls 60
+```
+
+5. **如果 deploy-skill 部署失败**（如 Cloudflare Pages 报错），使用 Vercel fallback：
+   - deploy-skill 会自动生成渲染好的 zip 到 `~/.nexu/deploy-skill-generated/rendered-distill-campaign.zip`
+   - 解压到临时目录，用 `npx vercel --yes --prod` 部署
+   - 这样仍然使用了新版模板的渲染结果，只是换了部署平台
 
 5. 部署完成后，**只返回链接 + 分享文案**：
 ```
