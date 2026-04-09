@@ -395,12 +395,12 @@ python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secre
 
 4. Token 自动缓存到 `~/.nexu/feishu-user-token.json`，后续自动使用+自动刷新
 
-**给用户的引导话术（直接发，不要修改）：**
+**给用户的引导话术（发送前把 `{app_id}` 替换成实际的飞书 App ID，把 `{oauth_url}` 替换成脚本生成的授权链接）：**
 ```
 🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，锐评更精准。
 
 ⚠️ 首次授权前需要先配置一下（30 秒搞定）：
-1. 打开飞书开放平台 → 你的应用 → 安全设置
+1. 点击打开安全设置：https://open.feishu.cn/app/{app_id}/security
 2. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
 3. 保存后再点击下面的授权链接
 
@@ -408,7 +408,7 @@ python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secre
 
 授权后，把浏览器地址栏中 code= 后面的那串字符发给我就行。
 
-💡 如果点击后看到「重定向 URL 有误」的报错（错误码 20029），就是第 2 步还没配好，配好后刷新重试就行。
+💡 如果点击后看到「重定向 URL 有误」的报错（错误码 20029），就是第 1 步还没配好，配好后刷新重试就行。
 ```
 
 > 只有当用户明确说"不想授权"或"跳过"时，才 fallback 到 Bot token 模式。不要主动说"你也可以把 Bot 拉到群里"。
