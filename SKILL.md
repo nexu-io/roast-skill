@@ -171,9 +171,10 @@ python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --oauth-url
 🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，锐评更精准。
 
 ⚠️ 首次授权前需要先配置一下（30 秒搞定）：
-1. 点击打开安全设置：https://open.feishu.cn/app/{app_id}/safe
-2. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
-3. 保存后再点击下面的授权链接
+1. 打开你的应用：https://open.feishu.cn/app/{app_id}
+2. 点左侧菜单「安全设置」
+3. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
+4. 保存后再点击下面的授权链接
 
 👉 点击授权：{oauth_url}
 
