@@ -373,20 +373,17 @@ python3 <skill_dir>/scripts/twitter_fetch.py <username> --count 30 --output /tmp
 
 > ⚠️ **所有飞书操作必须用本 skill 自带的 python 脚本 `scripts/feishu_fetch.py`。不要自己调飞书 API，不要用 feishu_chat 等内置工具。**
 
-##### 凭证获取（Agent 内部操作，不需要问用户）
+##### 凭证获取（脚本自动完成，不需要 agent 或用户手动操作）
 
-飞书凭证从 Agent 配置文件自动读取，**不需要问用户要 App ID 或 App Secret**：
+**`feishu_fetch.py` 会自动从以下位置按优先级读取飞书凭证：**
+1. 命令行参数 `--app-id` / `--app-secret`
+2. 环境变量 `FEISHU_APP_ID` / `FEISHU_APP_SECRET`
+3. Desktop App 配置：`~/Library/Application Support/@nexu/desktop/.nexu/config.json`
+4. 传统 Runtime 配置：`~/.nexu/config.json`
 
-```bash
-# 读取 Agent 配置文件获取飞书凭证
-# 配置文件路径: ~/.nexu/config.json
-# channels 数组中找 channelType="feishu" 的项，appId 在该项中
-# appSecret 在 secrets 对象中，key 格式: channel:{channel-uuid}:appSecret
-```
+**所以你不需要手动传 `--app-id` 和 `--app-secret`，直接运行脚本就行，它会自动找到凭证。**
 
-如果你的运行环境有环境变量 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，脚本也会自动使用。
-
-**如果找不到凭证 → Step 0 的检测项 2 就应该已经阻断了。如果走到这里还没有凭证，回到 Step 0 重新执行。**
+如果所有路径都找不到凭证，脚本会打印检查了哪些路径，方便排查。
 
 ##### ⛔ 第一步：找到正确的目标用户（必须确认，不能猜）
 

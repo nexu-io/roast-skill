@@ -42,9 +42,47 @@ except ImportError:
     print("Error: requests library not found. Run: pip install requests", file=sys.stderr)
     sys.exit(1)
 
-# --- Token Management ---
+# --- Config & Token Management ---
 
 TOKEN_CACHE_FILE = os.path.expanduser("~/.nexu/feishu-user-token.json")
+
+# Config paths: desktop app path first, then traditional runtime path
+CONFIG_PATHS = [
+    os.path.expanduser("~/Library/Application Support/@nexu/desktop/.nexu/config.json"),
+    os.path.expanduser("~/.nexu/config.json"),
+]
+
+
+def load_feishu_credentials_from_config():
+    """Auto-detect Feishu app_id and app_secret from OpenClaw config files.
+    Tries desktop app path first, then falls back to ~/.nexu/config.json.
+    Returns (app_id, app_secret) or (None, None) if not found.
+    """
+    for config_path in CONFIG_PATHS:
+        if not os.path.exists(config_path):
+            continue
+        try:
+            with open(config_path) as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            continue
+
+        channels = config.get("channels", [])
+        secrets = config.get("secrets", {})
+
+        for ch in channels:
+            if ch.get("channelType") != "feishu":
+                continue
+            app_id = ch.get("appId")
+            if not app_id:
+                continue
+            # Find app_secret in secrets: channel:{uuid}:appSecret
+            ch_uuid = ch.get("uuid", "")
+            app_secret = secrets.get(f"channel:{ch_uuid}:appSecret")
+            if app_id and app_secret:
+                print(f"✅ Loaded Feishu credentials from {config_path}", file=sys.stderr)
+                return app_id, app_secret
+    return None, None
 
 
 def get_tenant_token(app_id, app_secret):
@@ -398,6 +436,14 @@ def main():
 
     args = parser.parse_args()
 
+    # --- Auto-detect credentials from config for all modes ---
+    if not args.app_id or not args.app_secret:
+        config_id, config_secret = load_feishu_credentials_from_config()
+        if not args.app_id and config_id:
+            args.app_id = config_id
+        if not args.app_secret and config_secret:
+            args.app_secret = config_secret
+
     # --- OAuth URL generation ---
     if args.oauth_url:
         if not args.app_id:
@@ -424,7 +470,11 @@ def main():
         sys.exit(1)
 
     if not args.app_id or not args.app_secret:
-        print("Error: Feishu app credentials required (--app-id/--app-secret or env vars)", file=sys.stderr)
+        print("Error: Feishu app credentials required. Checked:", file=sys.stderr)
+        print(f"  --app-id/--app-secret flags: not provided", file=sys.stderr)
+        print(f"  FEISHU_APP_ID/FEISHU_APP_SECRET env vars: not set", file=sys.stderr)
+        for p in CONFIG_PATHS:
+            print(f"  {p}: {'exists' if os.path.exists(p) else 'not found'}", file=sys.stderr)
         sys.exit(1)
 
     # Try user token first (preferred)
