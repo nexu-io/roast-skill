@@ -150,7 +150,48 @@ contact:contact.base:readonly
 >
 > 正确做法永远是：检测 → 给出简短明确的解决指引（带链接）→ 等用户操作 → 再继续。
 
-#### 检测项 2.5: 飞书性别读取（可选，静默检测，不展示给用户）
+#### 检测项 2.5: 飞书 OAuth 授权（在 Step 0 完成，不要留到 Step 2）
+
+> ⛔ **OAuth 授权必须在 Step 0 就完成。** 不能先展示 "飞书 ✅" 然后到 Step 2 又让用户授权——这会让用户困惑。
+
+**检测步骤：**
+1. 检查 `~/.nexu/feishu-user-token.json` 是否存在且未过期
+2. **如果 token 有效** → ✅ 飞书 OAuth 已授权，跳过
+3. **如果 token 不存在或已过期（且无法自动刷新）** → 需要引导用户授权
+
+**引导授权（在 Step 0 中完成）：**
+
+先生成 OAuth 链接：
+```bash
+python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --oauth-url
+```
+
+然后发送引导话术（把 `{app_id}` 替换成实际 App ID，`{oauth_url}` 替换成脚本生成的链接）：
+```
+🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，锐评更精准。
+
+⚠️ 首次授权前需要先配置一下（30 秒搞定）：
+1. 点击打开安全设置：https://open.feishu.cn/app/{app_id}/safe
+2. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
+3. 保存后再点击下面的授权链接
+
+👉 点击授权：{oauth_url}
+
+授权后，把浏览器地址栏中 code= 后面的那串字符发给我就行。
+
+💡 如果点击后看到「重定向 URL 有误」的报错（错误码 20029），就是第 1 步还没配好，配好后刷新重试就行。
+```
+
+**等待用户回复 code，然后换取 token：**
+```bash
+python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secret <FEISHU_APP_SECRET> --auth-code <用户发的code>
+```
+
+Token 换取成功后才标记 "飞书 ✅"。
+
+> 只有当用户明确说"不想授权"或"跳过"时，才标记为 Bot token 模式（飞书数据会少一些）。
+
+#### 检测项 2.7: 飞书性别读取（可选，静默检测，不展示给用户）
 - 在 `feishu_app_scopes` 返回的权限列表中查找 `contact:user.gender:readonly`
   - 找到 → 内部记录 `genderAvailable = true`
   - 未找到 → 内部记录 `genderAvailable = false`（不需要引导开通）
@@ -194,9 +235,9 @@ ls <skill_dir>/deploy/deploy_skill.js
 
 📡 数据采集能力：
   ✅ 推特/X — 可自动抓取 profile + 推文
-  ✅ 飞书 — 可自动读取群聊消息
+  ✅ 飞书 — 已授权，可自动读取群聊消息
   ✅ 网页 — 可抓取文章/GitHub 等
-  ✅ 落地页部署 — deploy-skill 就绪
+  ✅ 落地页部署 — 已就绪
 
 飞书消息我会自动采集，以下信息可选填（有就更精准）：
 1. **TA 的推特链接**（可选）
@@ -356,62 +397,11 @@ python3 <skill_dir>/scripts/twitter_fetch.py <username> --count 30 --output /tmp
    - 返回值中 `user.gender` 字段：1=男，2=女，0=未知
    - 记录性别结果，供 Step 3 生成内容时使用
    - 如果获取失败或值为 0 → 视为性别未知，后续内容使用中性表述
-##### 第三步：采集消息 — 必须先做 OAuth 授权
+##### 第三步：采集消息
 
-> ⚠️ **重要：你必须先检查 OAuth token，没有就引导用户授权。不要跳过这一步直接用 Bot token 采集。Bot token 只能读 Bot 所在群的消息，数据极少，锐评质量差。**
-
-**默认流程：user_access_token 模式（OAuth 授权）**
-- 使用用户 OAuth 授权的 token，可读取**用户所在的所有群聊消息**
-- 不需要把 Bot 拉到任何群里
-- 数据范围大、锐评质量高
-- **这是默认且必须走的流程**
-
-**Fallback：tenant_access_token 模式（仅当用户明确拒绝 OAuth 时）**
-- 使用 Bot 自己的 token，只能读取 **Bot 所在群**的消息
-- 数据极少，锐评质量差
-- **只有用户明确说"不想授权/跳过 OAuth"时才用这个模式**
-- **你不能主动建议"把 Bot 拉到群里"——这是错误的引导**
-
-**执行顺序：**
-
-1. 先检查 `~/.nexu/feishu-user-token.json` 是否存在且有效
-2. **如果不存在或已过期** → 必须引导用户做 OAuth 授权（见下方）
-3. **如果存在且有效** → 直接用 user_token 采集
-
-**OAuth 授权引导（首次使用必须执行，仅需一次）：**
-
-如果 `~/.nexu/feishu-user-token.json` 不存在或已过期且无法刷新：
-
-1. 生成 OAuth 授权链接（脚本自动带 scope 参数，不需要手动加）：
-```bash
-python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --oauth-url
-```
-2. 让用户点击链接 → 飞书授权页面 → 点「同意授权」→ 页面 URL 中会出现 `?code=xxx`
-
-3. 用 code 换取 token：
-```bash
-python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secret <FEISHU_APP_SECRET> --auth-code <code>
-```
-
-4. Token 自动缓存到 `~/.nexu/feishu-user-token.json`，后续自动使用+自动刷新
-
-**给用户的引导话术（发送前把 `{app_id}` 替换成实际的飞书 App ID，把 `{oauth_url}` 替换成脚本生成的授权链接）：**
-```
-🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，锐评更精准。
-
-⚠️ 首次授权前需要先配置一下（30 秒搞定）：
-1. 点击打开安全设置：https://open.feishu.cn/app/{app_id}/security
-2. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
-3. 保存后再点击下面的授权链接
-
-👉 点击授权：{oauth_url}
-
-授权后，把浏览器地址栏中 code= 后面的那串字符发给我就行。
-
-💡 如果点击后看到「重定向 URL 有误」的报错（错误码 20029），就是第 1 步还没配好，配好后刷新重试就行。
-```
-
-> 只有当用户明确说"不想授权"或"跳过"时，才 fallback 到 Bot token 模式。不要主动说"你也可以把 Bot 拉到群里"。
+> **OAuth 授权已在 Step 0 检测项 2.5 中完成。** 如果用户已授权，token 在 `~/.nexu/feishu-user-token.json`。如果用户跳过了 OAuth，走 Bot token 模式。
+>
+> 直接运行采集命令即可，脚本会自动检测 token 模式。
 
 **采集命令（token 检测和模式选择由脚本自动完成）：**
 ```bash
