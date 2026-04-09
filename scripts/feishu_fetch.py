@@ -1,16 +1,32 @@
 #!/usr/bin/env python3
 """
-Fetch Feishu messages for a target user across all shared groups.
+Fetch Feishu messages for a target user across groups.
 Designed for roast-skill — collects message data for AI roast generation.
 
+Supports two modes:
+  1. User token mode (preferred): Uses user_access_token via OAuth to read ALL
+     groups the authorizing user is in. No need to add bot to every group.
+  2. Bot token mode (fallback): Uses tenant_access_token, can only read groups
+     the bot has been added to.
+
 Usage:
+  # User token mode (preferred — reads all user's groups)
+  python feishu_fetch.py --app-id <id> --app-secret <secret> --target-user <open_id> --user-token <token> [--output /tmp/result.json]
+
+  # Bot token mode (fallback — only reads bot's groups)
   python feishu_fetch.py --app-id <id> --app-secret <secret> --target-user <open_id> [--output /tmp/result.json]
 
+  # OAuth helper: generate authorization URL for user to click
+  python feishu_fetch.py --app-id <id> --oauth-url [--redirect-uri <uri>]
+
+  # OAuth helper: exchange auth code for user token
+  python feishu_fetch.py --app-id <id> --app-secret <secret> --auth-code <code>
+
 Environment variables (alternative to flags):
-  FEISHU_APP_ID, FEISHU_APP_SECRET
+  FEISHU_APP_ID, FEISHU_APP_SECRET, FEISHU_USER_TOKEN
 
 Output JSON:
-  { "target_user": "...", "total_messages": N, "groups": [...], "messages": [...] }
+  { "target_user": "...", "mode": "user_token|bot_token", "total_messages": N, "groups": [...], "messages": [...] }
 """
 
 import argparse
@@ -18,6 +34,7 @@ import json
 import os
 import sys
 import time
+import urllib.parse
 
 try:
     import requests
@@ -25,20 +42,156 @@ except ImportError:
     print("Error: requests library not found. Run: pip install requests", file=sys.stderr)
     sys.exit(1)
 
-def get_token(app_id, app_secret):
-    """Get tenant access token."""
+# --- Token Management ---
+
+TOKEN_CACHE_FILE = os.path.expanduser("~/.nexu/feishu-user-token.json")
+
+
+def get_tenant_token(app_id, app_secret):
+    """Get tenant access token (bot identity)."""
     r = requests.post(
         "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
-        json={"app_id": app_id, "app_secret": app_secret}
+        json={"app_id": app_id, "app_secret": app_secret},
     )
     data = r.json()
     if data.get("code") != 0:
-        print(f"Token error: {data}", file=sys.stderr)
+        print(f"Tenant token error: {data}", file=sys.stderr)
         sys.exit(1)
     return data["tenant_access_token"]
 
+
+def get_app_access_token(app_id, app_secret):
+    """Get app access token (needed for user token exchange)."""
+    r = requests.post(
+        "https://open.feishu.cn/open-apis/auth/v3/app_access_token/internal",
+        json={"app_id": app_id, "app_secret": app_secret},
+    )
+    data = r.json()
+    if data.get("code") != 0:
+        print(f"App token error: {data}", file=sys.stderr)
+        sys.exit(1)
+    return data["app_access_token"]
+
+
+def generate_oauth_url(app_id, redirect_uri="https://open.feishu.cn/document/home/index"):
+    """Generate OAuth authorization URL for user to click."""
+    params = {
+        "app_id": app_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "state": "roast-skill",
+    }
+    url = "https://open.feishu.cn/open-apis/authen/v1/authorize?" + urllib.parse.urlencode(params)
+    return url
+
+
+def exchange_code_for_user_token(app_id, app_secret, auth_code):
+    """Exchange OAuth authorization code for user_access_token."""
+    app_token = get_app_access_token(app_id, app_secret)
+    r = requests.post(
+        "https://open.feishu.cn/open-apis/authen/v1/oidc/access_token",
+        headers={"Authorization": f"Bearer {app_token}", "Content-Type": "application/json"},
+        json={"grant_type": "authorization_code", "code": auth_code},
+    )
+    data = r.json()
+    if data.get("code") != 0:
+        print(f"Token exchange error: {data}", file=sys.stderr)
+        sys.exit(1)
+    token_data = data.get("data", {})
+    # Save token for reuse
+    cache = {
+        "access_token": token_data.get("access_token"),
+        "refresh_token": token_data.get("refresh_token"),
+        "expires_at": int(time.time()) + token_data.get("expires_in", 7200) - 300,
+        "app_id": app_id,
+    }
+    os.makedirs(os.path.dirname(TOKEN_CACHE_FILE), exist_ok=True)
+    with open(TOKEN_CACHE_FILE, "w") as f:
+        json.dump(cache, f, indent=2)
+    print(f"✅ User token saved to {TOKEN_CACHE_FILE}", file=sys.stderr)
+    print(f"   Expires in {token_data.get('expires_in', 0)} seconds", file=sys.stderr)
+    print(f"   User: {token_data.get('name', 'unknown')}", file=sys.stderr)
+    return token_data.get("access_token")
+
+
+def refresh_user_token(app_id, app_secret, refresh_token):
+    """Refresh an expired user_access_token."""
+    app_token = get_app_access_token(app_id, app_secret)
+    r = requests.post(
+        "https://open.feishu.cn/open-apis/authen/v1/oidc/refresh_access_token",
+        headers={"Authorization": f"Bearer {app_token}", "Content-Type": "application/json"},
+        json={"grant_type": "refresh_token", "refresh_token": refresh_token},
+    )
+    data = r.json()
+    if data.get("code") != 0:
+        print(f"Token refresh error: {data}", file=sys.stderr)
+        return None
+    token_data = data.get("data", {})
+    cache = {
+        "access_token": token_data.get("access_token"),
+        "refresh_token": token_data.get("refresh_token"),
+        "expires_at": int(time.time()) + token_data.get("expires_in", 7200) - 300,
+        "app_id": app_id,
+    }
+    with open(TOKEN_CACHE_FILE, "w") as f:
+        json.dump(cache, f, indent=2)
+    print("✅ User token refreshed", file=sys.stderr)
+    return token_data.get("access_token")
+
+
+def load_cached_user_token(app_id, app_secret):
+    """Try to load and auto-refresh cached user token."""
+    if not os.path.exists(TOKEN_CACHE_FILE):
+        return None
+    try:
+        with open(TOKEN_CACHE_FILE) as f:
+            cache = json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return None
+
+    if cache.get("app_id") != app_id:
+        return None
+
+    # Check if token is still valid
+    if cache.get("expires_at", 0) > int(time.time()):
+        return cache.get("access_token")
+
+    # Try refresh
+    refresh_tok = cache.get("refresh_token")
+    if refresh_tok:
+        print("User token expired, refreshing...", file=sys.stderr)
+        return refresh_user_token(app_id, app_secret, refresh_tok)
+
+    return None
+
+
+# --- Data Fetching ---
+
+
+def get_user_chats(headers):
+    """Get all chats the user is in (user_access_token mode)."""
+    chats = []
+    page_token = ""
+    while True:
+        url = "https://open.feishu.cn/open-apis/im/v1/chats?page_size=100&user_id_type=open_id"
+        if page_token:
+            url += f"&page_token={page_token}"
+        r = requests.get(url, headers=headers)
+        data = r.json()
+        if data.get("code") != 0:
+            print(f"Chat list error: {data.get('msg')} (code: {data.get('code')})", file=sys.stderr)
+            break
+        items = data.get("data", {}).get("items", [])
+        chats.extend(items)
+        if not data.get("data", {}).get("has_more"):
+            break
+        page_token = data["data"].get("page_token", "")
+        time.sleep(0.1)
+    return chats
+
+
 def get_bot_chats(headers):
-    """Get all chats the bot is in."""
+    """Get all chats the bot is in (tenant_access_token mode)."""
     chats = []
     page_token = ""
     while True:
@@ -56,6 +209,7 @@ def get_bot_chats(headers):
             break
         page_token = data["data"].get("page_token", "")
     return chats
+
 
 def get_chat_members(headers, chat_id):
     """Get members of a chat."""
@@ -76,6 +230,7 @@ def get_chat_members(headers, chat_id):
         page_token = data["data"].get("page_token", "")
     return members
 
+
 def get_messages(headers, chat_id, target_user, max_pages=40):
     """Fetch messages from target user in a chat."""
     msgs = []
@@ -93,53 +248,49 @@ def get_messages(headers, chat_id, target_user, max_pages=40):
         for msg in items:
             if msg.get("sender", {}).get("id") == target_user:
                 body_content = msg.get("body", {}).get("content", "")
-                msgs.append({
-                    "chat_id": chat_id,
-                    "msg_type": msg.get("msg_type"),
-                    "create_time": msg.get("create_time"),
-                    "body": body_content,
-                    "message_id": msg.get("message_id", "")
-                })
+                msgs.append(
+                    {
+                        "chat_id": chat_id,
+                        "msg_type": msg.get("msg_type"),
+                        "create_time": msg.get("create_time"),
+                        "body": body_content,
+                        "message_id": msg.get("message_id", ""),
+                    }
+                )
         if not data.get("data", {}).get("has_more"):
             break
         page_token = data["data"].get("page_token", "")
-        time.sleep(0.15)  # Rate limit
+        time.sleep(0.15)
     return msgs
 
-def main():
-    parser = argparse.ArgumentParser(description="Fetch Feishu messages for roast-skill")
-    parser.add_argument("--app-id", default=os.environ.get("FEISHU_APP_ID"), help="Feishu App ID")
-    parser.add_argument("--app-secret", default=os.environ.get("FEISHU_APP_SECRET"), help="Feishu App Secret")
-    parser.add_argument("--target-user", required=True, help="Target user open_id")
-    parser.add_argument("--output", "-o", help="Output JSON file path")
-    args = parser.parse_args()
 
-    if not args.app_id or not args.app_secret:
-        print("Error: Feishu app credentials required (--app-id/--app-secret or env vars)", file=sys.stderr)
-        sys.exit(1)
+# --- Main Flows ---
 
-    print("Getting token...", file=sys.stderr)
-    token = get_token(args.app_id, args.app_secret)
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
-    print("Finding shared groups...", file=sys.stderr)
-    chats = get_bot_chats(headers)
-    print(f"  Bot is in {len(chats)} chats", file=sys.stderr)
+def fetch_with_user_token(user_token, target_user, output_path):
+    """Fetch messages using user_access_token — can read ALL user's groups."""
+    headers = {"Authorization": f"Bearer {user_token}", "Content-Type": "application/json"}
 
-    # Find groups where target user is also a member
+    print("🔑 Mode: user_access_token (can read all user's groups)", file=sys.stderr)
+    print("Finding groups with target user...", file=sys.stderr)
+
+    chats = get_user_chats(headers)
+    print(f"  User is in {len(chats)} chats", file=sys.stderr)
+
     shared_groups = []
     for chat in chats:
         chat_id = chat.get("chat_id")
         if not chat_id:
             continue
+        # Skip p2p chats — only group chats have rich multi-party data
+        if chat.get("chat_mode") == "p2p":
+            continue
         members = get_chat_members(headers, chat_id)
         member_ids = [m.get("member_id") for m in members]
-        if args.target_user in member_ids:
-            shared_groups.append({
-                "chat_id": chat_id,
-                "name": chat.get("name", ""),
-                "member_count": len(members)
-            })
+        if target_user in member_ids:
+            shared_groups.append(
+                {"chat_id": chat_id, "name": chat.get("name", ""), "member_count": len(members)}
+            )
             print(f"  ✓ Shared group: {chat.get('name', chat_id)}", file=sys.stderr)
         time.sleep(0.1)
 
@@ -148,25 +299,140 @@ def main():
     all_msgs = []
     for group in shared_groups:
         print(f"  Reading {group['name'] or group['chat_id']}...", file=sys.stderr)
-        msgs = get_messages(headers, group["chat_id"], args.target_user)
+        msgs = get_messages(headers, group["chat_id"], target_user)
         all_msgs.extend(msgs)
         print(f"    → {len(msgs)} messages", file=sys.stderr)
 
     result = {
-        "target_user": args.target_user,
+        "target_user": target_user,
+        "mode": "user_token",
         "total_messages": len(all_msgs),
         "shared_groups": shared_groups,
-        "messages": all_msgs
+        "messages": all_msgs,
     }
 
     output = json.dumps(result, ensure_ascii=False, indent=2)
-
-    if args.output:
-        with open(args.output, "w") as f:
+    if output_path:
+        with open(output_path, "w") as f:
             f.write(output)
-        print(f"\n✅ Saved {len(all_msgs)} messages to {args.output}", file=sys.stderr)
+        print(f"\n✅ Saved {len(all_msgs)} messages from {len(shared_groups)} groups to {output_path}", file=sys.stderr)
     else:
         print(output)
+
+
+def fetch_with_bot_token(app_id, app_secret, target_user, output_path):
+    """Fetch messages using tenant_access_token — only bot's groups."""
+    token = get_tenant_token(app_id, app_secret)
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    print("🤖 Mode: tenant_access_token (only bot's groups)", file=sys.stderr)
+    print("Finding shared groups...", file=sys.stderr)
+
+    chats = get_bot_chats(headers)
+    print(f"  Bot is in {len(chats)} chats", file=sys.stderr)
+
+    shared_groups = []
+    for chat in chats:
+        chat_id = chat.get("chat_id")
+        if not chat_id:
+            continue
+        members = get_chat_members(headers, chat_id)
+        member_ids = [m.get("member_id") for m in members]
+        if target_user in member_ids:
+            shared_groups.append(
+                {"chat_id": chat_id, "name": chat.get("name", ""), "member_count": len(members)}
+            )
+            print(f"  ✓ Shared group: {chat.get('name', chat_id)}", file=sys.stderr)
+        time.sleep(0.1)
+
+    print(f"\nFound {len(shared_groups)} shared groups, fetching messages...", file=sys.stderr)
+
+    all_msgs = []
+    for group in shared_groups:
+        print(f"  Reading {group['name'] or group['chat_id']}...", file=sys.stderr)
+        msgs = get_messages(headers, group["chat_id"], target_user)
+        all_msgs.extend(msgs)
+        print(f"    → {len(msgs)} messages", file=sys.stderr)
+
+    result = {
+        "target_user": target_user,
+        "mode": "bot_token",
+        "total_messages": len(all_msgs),
+        "shared_groups": shared_groups,
+        "messages": all_msgs,
+    }
+
+    output = json.dumps(result, ensure_ascii=False, indent=2)
+    if output_path:
+        with open(output_path, "w") as f:
+            f.write(output)
+        print(f"\n✅ Saved {len(all_msgs)} messages from {len(shared_groups)} groups to {output_path}", file=sys.stderr)
+    else:
+        print(output)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Fetch Feishu messages for roast-skill")
+    parser.add_argument("--app-id", default=os.environ.get("FEISHU_APP_ID"), help="Feishu App ID")
+    parser.add_argument("--app-secret", default=os.environ.get("FEISHU_APP_SECRET"), help="Feishu App Secret")
+    parser.add_argument("--target-user", help="Target user open_id")
+    parser.add_argument("--user-token", default=os.environ.get("FEISHU_USER_TOKEN"), help="User access token (preferred)")
+    parser.add_argument("--output", "-o", help="Output JSON file path")
+
+    # OAuth helpers
+    parser.add_argument("--oauth-url", action="store_true", help="Generate OAuth authorization URL")
+    parser.add_argument("--redirect-uri", default="https://open.feishu.cn/document/home/index", help="OAuth redirect URI")
+    parser.add_argument("--auth-code", help="Exchange OAuth auth code for user token")
+
+    args = parser.parse_args()
+
+    # --- OAuth URL generation ---
+    if args.oauth_url:
+        if not args.app_id:
+            print("Error: --app-id required for OAuth URL generation", file=sys.stderr)
+            sys.exit(1)
+        url = generate_oauth_url(args.app_id, args.redirect_uri)
+        print(f"OAuth URL:\n{url}")
+        print(f"\nUser clicks this link → authorizes → gets redirected with ?code=xxx", file=sys.stderr)
+        print(f"Then run: python {sys.argv[0]} --app-id {args.app_id} --app-secret <secret> --auth-code <code>", file=sys.stderr)
+        return
+
+    # --- OAuth code exchange ---
+    if args.auth_code:
+        if not args.app_id or not args.app_secret:
+            print("Error: --app-id and --app-secret required for code exchange", file=sys.stderr)
+            sys.exit(1)
+        token = exchange_code_for_user_token(args.app_id, args.app_secret, args.auth_code)
+        print(f"\nuser_access_token: {token}")
+        return
+
+    # --- Main fetch flow ---
+    if not args.target_user:
+        print("Error: --target-user required", file=sys.stderr)
+        sys.exit(1)
+
+    if not args.app_id or not args.app_secret:
+        print("Error: Feishu app credentials required (--app-id/--app-secret or env vars)", file=sys.stderr)
+        sys.exit(1)
+
+    # Try user token first (preferred)
+    user_token = args.user_token or load_cached_user_token(args.app_id, args.app_secret)
+
+    if user_token:
+        # Verify token is valid
+        test_r = requests.get(
+            "https://open.feishu.cn/open-apis/authen/v1/user_info",
+            headers={"Authorization": f"Bearer {user_token}"},
+        )
+        if test_r.json().get("code") == 0:
+            fetch_with_user_token(user_token, args.target_user, args.output)
+            return
+        else:
+            print("User token invalid, falling back to bot token mode", file=sys.stderr)
+
+    # Fallback to bot token
+    fetch_with_bot_token(args.app_id, args.app_secret, args.target_user, args.output)
+
 
 if __name__ == "__main__":
     main()

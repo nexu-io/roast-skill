@@ -296,16 +296,56 @@ python3 <skill_dir>/scripts/twitter_fetch.py <username> --count 30 --output /tmp
    - 返回值中 `user.gender` 字段：1=男，2=女，0=未知
    - 记录性别结果，供 Step 3 生成内容时使用
    - 如果获取失败或值为 0 → 视为性别未知，后续内容使用中性表述
-3. 使用内置脚本自动采集消息：
+##### 第三步：采集消息（脚本支持两种模式，自动选择最优）
+
+脚本支持两种模式，**自动优先使用 user_token 模式**：
+
+**模式 A：user_access_token 模式（优先，数据最全）**
+- 使用用户 OAuth 授权的 token，可读取**用户所在的所有群**
+- 不需要把 Bot 拉到每个群里
+- 数据范围大、锐评质量高
+
+**模式 B：tenant_access_token 模式（fallback，数据有限）**
+- 使用 Bot 自己的 token，只能读取 **Bot 所在群**的消息
+- 如果 Bot 只在少数群里，数据可能很少
+
+**采集命令：**
 ```bash
 python3 <skill_dir>/scripts/feishu_fetch.py \
   --app-id <FEISHU_APP_ID> --app-secret <FEISHU_APP_SECRET> \
   --target-user <open_id> --output /tmp/roast_feishu_data.json
 ```
-4. 脚本自动：获取 **bot 所在的所有群** → 找到目标用户也在的群（共同群） → 读取目标用户在**所有共同群**中的全部消息
-5. 从输出 JSON 中分析：发言频率、活跃时段、消息长度、高频词、表情使用、沟通风格
 
-> ⚠️ **重要：采集范围是目标用户在所有共同群聊中的消息，不是只读目标用户和当前用户之间的私聊或某一个群。** Bot 在哪些群里，就扫哪些群，只要目标用户也在那个群里就读取 TA 的全部消息。群越多、消息越多，锐评质量越高。
+脚本会自动检查 `~/.nexu/feishu-user-token.json`，如果有有效的 user_token 就用模式 A，否则 fallback 到模式 B。
+
+**首次使用时引导用户做 OAuth 授权（仅需一次）：**
+
+如果 `~/.nexu/feishu-user-token.json` 不存在或已过期且无法刷新，引导用户完成 OAuth：
+
+1. 生成 OAuth 授权链接：
+```bash
+python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --oauth-url
+```
+
+2. 让用户点击链接 → 飞书授权页面 → 点「同意授权」→ 页面 URL 中会出现 `?code=xxx`
+
+3. 用 code 换取 token：
+```bash
+python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secret <FEISHU_APP_SECRET> --auth-code <code>
+```
+
+4. Token 自动缓存到 `~/.nexu/feishu-user-token.json`，后续自动使用+自动刷新
+
+**给用户的引导话术：**
+```
+🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，不用把 Bot 一个一个拉到群里。
+
+👉 点击这个链接完成授权：{oauth_url}
+
+授权后，把浏览器地址栏中 code= 后面的那串字符发给我就行。
+```
+
+> ⚠️ **注意：** OAuth 授权是可选的增强功能。如果用户不想授权或遇到问题，脚本会自动 fallback 到 Bot token 模式（只读 Bot 所在群的消息）。不要因为 OAuth 失败就阻断整个流程。
 
 如果飞书能力 ❌（应该在 Step 0 就已经阻断并引导了，正常不会走到这里）：
 ```
