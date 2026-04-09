@@ -527,6 +527,11 @@ Step 3 完成后**立即**执行此步骤，不要：
 
 **锐评的唯一交付形式就是落地页链接。** 采集数据 → 内部生成锐评 → 自动部署落地页 → 返回链接，一气呵成。
 
+> ⛔ **部署失败时的禁令：**
+> - **绝对不能自己发明替代部署方案**（Gist、htmlpreview、Vercel、GitHub Pages、本地 HTML、在线 HTML 预览等）
+> - 部署失败 → 检查错误信息 → 修复 content.json → 重试 deploy 命令
+> - 反复失败 → 告诉用户"部署遇到问题，正在排查"，**不要自己绕路**
+
 1. 构造 `content.json` 文件，**严格符合** deploy-skill distill-campaign 模板的 schema：
 
 ```json
