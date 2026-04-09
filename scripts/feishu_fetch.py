@@ -434,6 +434,9 @@ def main():
     parser.add_argument("--redirect-uri", default="https://open.feishu.cn/document/home/index", help="OAuth redirect URI")
     parser.add_argument("--auth-code", help="Exchange OAuth auth code for user token")
 
+    # Verification
+    parser.add_argument("--verify", action="store_true", help="Verify that messages can actually be read (quick test)")
+
     args = parser.parse_args()
 
     # --- Auto-detect credentials from config for all modes ---
@@ -465,6 +468,39 @@ def main():
         return
 
     # --- Main fetch flow ---
+    # --- Verify mode: quick test if messages can actually be read ---
+    if args.verify:
+        if not args.app_id or not args.app_secret:
+            print('{"canRead": false, "error": "no_credentials"}')
+            sys.exit(1)
+        token = get_tenant_token(args.app_id, args.app_secret)
+        if not token:
+            print('{"canRead": false, "error": "token_failed"}')
+            sys.exit(1)
+        headers = {"Authorization": f"Bearer {token}"}
+        # Get first chat bot is in
+        r = requests.get("https://open.feishu.cn/open-apis/im/v1/chats?page_size=1", headers=headers)
+        data = r.json()
+        chats = data.get("data", {}).get("items", [])
+        if not chats:
+            print('{"canRead": false, "error": "no_chats", "reason": "Bot is not in any group chat"}')
+            sys.exit(0)
+        chat_id = chats[0]["chat_id"]
+        chat_name = chats[0].get("name", "unknown")
+        # Try to read 1 message
+        msg_r = requests.get(
+            f"https://open.feishu.cn/open-apis/im/v1/messages?container_id_type=chat&container_id={chat_id}&page_size=1",
+            headers=headers,
+        )
+        msg_data = msg_r.json()
+        if msg_data.get("code") == 0:
+            msg_count = len(msg_data.get("data", {}).get("items", []))
+            print(json.dumps({"canRead": True, "testChat": chat_name, "messagesFound": msg_count}))
+        else:
+            err_msg = msg_data.get("msg", "unknown error")
+            print(json.dumps({"canRead": False, "error": "read_failed", "testChat": chat_name, "detail": err_msg}))
+        sys.exit(0)
+
     if not args.target_user:
         print("Error: --target-user required", file=sys.stderr)
         sys.exit(1)
