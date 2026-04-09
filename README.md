@@ -133,6 +133,21 @@ git clone https://github.com/nexu-io/roast-skill <你的 agent skills 目录>
 
 无需安装依赖 — 纯 prompt skill，装完即用。
 
+### ⚠️ 平台兼容性说明
+
+| 功能 | nexu | 其他 Agent 平台 |
+|------|:----:|:--------------:|
+| 锐评生成 | ✅ | ✅ |
+| 飞书消息自动采集 | ✅ | ✅（需配飞书凭证） |
+| **落地页一键部署** | ✅ 自动部署到 `.nexu.space` | ❌ 需手动打开本地 HTML |
+
+> **落地页部署**依赖 nexu 内置的 `deploy-skill`，会自动将锐评结果渲染为赛博朋克风格网页并部署到 `nexu.space`。
+>
+> 在其他 Agent 平台上使用时，锐评内容仍然会生成，但**落地页需要手动处理**：
+> 1. Agent 会将渲染好的 HTML 文件保存到本地（`~/.nexu/deploy-skill-generated/`）
+> 2. 你可以直接用浏览器打开这个 HTML 文件查看效果
+> 3. 或者自行部署到 Vercel / Netlify / GitHub Pages 等静态托管平台
+
 ---
 
 ## 使用
