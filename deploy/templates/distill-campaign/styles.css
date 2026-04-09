@@ -706,3 +706,36 @@ html[data-theme="light"] .tab-btn.active {
   backdrop-filter: blur(4px);
   pointer-events: auto;
 }
+
+/* ── GITHUB STAR PILL ── */
+.github-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text2);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.github-stars--loaded {
+  opacity: 1;
+}
+.github-stars svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  color: #f5c518;
+}
+html[data-theme="light"] .github-stars {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.6);
+}

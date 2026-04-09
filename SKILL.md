@@ -168,7 +168,7 @@ python3 <skill_dir>/scripts/feishu_fetch.py --auth-code <用户发的code>
 
 **4a. 检查 deploy 脚本存在：**
 ```bash
-ls <skill_dir>/deploy/deploy_skill.js
+ls <skill_dir>/deploy/scripts/deploy_skill.js
 ```
 - 不存在 → roast-skill 安装不完整，重新安装。
 
@@ -179,7 +179,7 @@ ls <skill_dir>/deploy/node_modules/jszip/package.json 2>/dev/null || (cd <skill_
 
 **4c. 检查 Nexu 登录态（⛔ 关键 — 必须提前检测）：**
 ```bash
-node <skill_dir>/deploy/deploy_skill.js check
+node <skill_dir>/deploy/scripts/deploy_skill.js check
 ```
 - 返回 `"status": "ok"` → ✅ 部署就绪
 - 报错包含 `"log in to your Nexu account"` → ⛔ **STOP，告诉用户：**
@@ -565,7 +565,7 @@ Step 3 完成后**立即**执行此步骤，不要：
 
 3. 调用 deploy-skill 部署（优先方案）：
 ```bash
-node <skill_dir>/deploy/deploy_skill.js submit \
+node <skill_dir>/deploy/scripts/deploy_skill.js submit \
   --template-id distill-campaign \
   --content-file /tmp/roast_content_{名字拼音}.json \
   --bot-id <BOT_ID> \
@@ -576,7 +576,7 @@ node <skill_dir>/deploy/deploy_skill.js submit \
 
 4. 提交后等待部署完成：
 ```bash
-node <skill_dir>/deploy/deploy_skill.js wait-and-deliver \
+node <skill_dir>/deploy/scripts/deploy_skill.js wait-and-deliver \
   --job-id <JOB_ID> \
   --poll-interval-ms 5000 \
   --max-polls 60

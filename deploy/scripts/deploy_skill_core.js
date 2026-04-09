@@ -28,7 +28,7 @@ const FINAL_HOST = "nexu.space";
 const FINAL_PATH_PREFIX = "/deploy/";
 const FALLBACK_HOST_SUFFIX = ".pages.dev";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, "templates");
+const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, "../templates");
 const DISTILL_AVATAR_ROOT = path.join(
   TEMPLATE_ROOT,
   "distill-campaign",
@@ -108,8 +108,99 @@ export async function loadPageDeployConfig(nexuHome) {
   return readJsonFile(configPath(nexuHome), {});
 }
 
-async function loadLocalNexuConfig(nexuHome) {
-  return readJsonFile(nexuConfigPath(nexuHome), {});
+function buildNexuCloudCandidatePaths(nexuHome) {
+  const home = os.homedir();
+  const raw = [
+    path.resolve(nexuConfigPath(nexuHome)),
+    path.resolve(
+      home,
+      "Library",
+      "Application Support",
+      "@nexu",
+      "desktop",
+      ".nexu",
+      NEXU_CONFIG_FILENAME,
+    ),
+    path.resolve(home, ".nexu", NEXU_CONFIG_FILENAME),
+  ];
+  const seen = new Set();
+  const unique = [];
+  for (const candidate of raw) {
+    if (seen.has(candidate)) continue;
+    seen.add(candidate);
+    unique.push(candidate);
+  }
+  return unique;
+}
+
+async function resolveNexuCloudCredentials(nexuHome) {
+  const candidates = buildNexuCloudCandidatePaths(nexuHome);
+  const triedMissing = [];
+  for (const candidate of candidates) {
+    const cfg = await readJsonFile(candidate, null);
+    if (cfg === null) {
+      triedMissing.push(candidate);
+      continue;
+    }
+    const desktop =
+      cfg && typeof cfg === "object" && cfg.desktop && typeof cfg.desktop === "object"
+        ? cfg.desktop
+        : null;
+    const cloud =
+      desktop && desktop.cloud && typeof desktop.cloud === "object"
+        ? desktop.cloud
+        : null;
+    if (!cloud) {
+      // This config file has no desktop.cloud section at all — it is not an
+      // authoritative source for Nexu cloud credentials, so keep searching.
+      triedMissing.push(candidate);
+      continue;
+    }
+    // This file declares a cloud config — it is authoritative. Either accept
+    // it or fail here without falling through to the next candidate.
+    if (cloud.connected !== true) {
+      return {
+        ok: false,
+        reason: "not-connected",
+        path: candidate,
+      };
+    }
+    const apiKey = typeof cloud.apiKey === "string" ? cloud.apiKey.trim() : "";
+    if (apiKey.length === 0) {
+      return {
+        ok: false,
+        reason: "no-api-key",
+        path: candidate,
+      };
+    }
+    return { ok: true, apiKey, path: candidate };
+  }
+  return { ok: false, reason: "no-config-found", tried: triedMissing };
+}
+
+function describeNexuCredentialsError(result) {
+  if (result.reason === "no-config-found") {
+    const lines = result.tried.map((candidate) => `  - ${candidate}`).join("\n");
+    return (
+      "deploy-skill could not find a Nexu cloud configuration with a logged-in account. " +
+      "Please log in to the Nexu desktop app (or initialize your Nexu config), then retry.\n" +
+      "Paths checked:\n" +
+      lines
+    );
+  }
+  if (result.reason === "not-connected") {
+    return (
+      `deploy-skill found a Nexu config at ${result.path}, but desktop.cloud.connected is not true. ` +
+      "Please re-log in to your Nexu account via the Nexu desktop app, then retry."
+    );
+  }
+  if (result.reason === "no-api-key") {
+    return (
+      `deploy-skill found a Nexu config at ${result.path}, but desktop.cloud.apiKey is missing or empty. ` +
+      "Please re-log in to your Nexu account via the Nexu desktop app, then retry."
+    );
+  }
+  return "deploy-skill could not resolve Nexu cloud credentials.";
 }
 
 export async function savePageDeployConfig(nexuHome, config) {
@@ -529,7 +620,7 @@ function renderDistillCampaignHtml(content, selectedAvatar) {
               <button class="share-btn" id="share-poster" type="button" onclick="openPoster()">📸 海报</button>
             </div>
             <div style="display:flex;gap:10px;">
-              <a class="share-btn" href="${NEXU_REPO_URL}" target="_blank" rel="noreferrer" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.744 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg> GitHub</a>
+              <a class="share-btn" id="github-link" href="${NEXU_REPO_URL}" target="_blank" rel="noreferrer" style="text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.744 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg> GitHub<span class="github-stars" id="github-stars" aria-label="GitHub stars"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span id="github-stars-count">—</span></span></a>
             </div>
           </div>
         </div>
@@ -711,6 +802,34 @@ function renderDistillCampaignHtml(content, selectedAvatar) {
         document.documentElement.dataset.theme = saved;
         document.getElementById("theme-toggle").textContent =
           saved === "light" ? "☀" : "☽";
+      })();
+
+      function formatStarCount(n) {
+        if (typeof n !== "number" || !Number.isFinite(n) || n < 0) return null;
+        if (n >= 10000) return (n / 1000).toFixed(1).replace(/\\.0$/, "") + "k";
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\\.0$/, "") + "k";
+        return String(n);
+      }
+
+      (function fetchGithubStars() {
+        const container = document.getElementById("github-stars");
+        const countEl = document.getElementById("github-stars-count");
+        if (!container || !countEl) return;
+        fetch("https://api.github.com/repos/nexu-io/nexu", {
+          headers: { Accept: "application/vnd.github+json" },
+        })
+          .then((response) => (response.ok ? response.json() : null))
+          .then((data) => {
+            if (!data) return;
+            const formatted = formatStarCount(data.stargazers_count);
+            if (formatted === null) return;
+            countEl.textContent = formatted;
+            container.classList.add("github-stars--loaded");
+          })
+          .catch(() => {
+            // leave the placeholder in place; fetch failure should not
+            // degrade the rest of the page.
+          });
       })();
     </script>
   </body>
@@ -905,59 +1024,18 @@ function upsertJob(jobs, nextJob) {
   return [...withoutCurrent, nextJob];
 }
 
-// Try multiple paths to find Nexu cloud config (desktop app + traditional)
-async function loadCloudConfig(nexuHome) {
-  const candidates = [
-    nexuHome,
-    path.join(os.homedir(), "Library", "Application Support", "@nexu", "desktop", ".nexu"),
-    path.join(os.homedir(), ".nexu"),
-  ];
-  // Deduplicate
-  const seen = new Set();
-  for (const candidate of candidates) {
-    if (seen.has(candidate)) continue;
-    seen.add(candidate);
-    const cfg = await readJsonFile(nexuConfigPath(candidate), null);
-    if (
-      cfg &&
-      typeof cfg === "object" &&
-      cfg.desktop &&
-      typeof cfg.desktop === "object" &&
-      cfg.desktop.cloud &&
-      typeof cfg.desktop.cloud === "object" &&
-      cfg.desktop.cloud.connected === true &&
-      typeof cfg.desktop.cloud.apiKey === "string" &&
-      cfg.desktop.cloud.apiKey.trim().length > 0
-    ) {
-      return cfg.desktop.cloud;
-    }
-  }
-  return null;
-}
-
 async function resolveConfig(nexuHome) {
-  // deploy-skill.json may be in a different path than config.json
-  // Try both nexuHome and ~/.nexu for deploy config
-  let config = await loadPageDeployConfig(nexuHome);
-  if (typeof config.baseUrl !== "string" || config.baseUrl.length === 0) {
-    // Fallback: try ~/.nexu if nexuHome is desktop path
-    const classicHome = path.join(os.homedir(), ".nexu");
-    if (nexuHome !== classicHome) {
-      config = await loadPageDeployConfig(classicHome);
-    }
-  }
+  const config = await loadPageDeployConfig(nexuHome);
   if (typeof config.baseUrl !== "string" || config.baseUrl.length === 0) {
     throw new Error("deploy-skill baseUrl is not configured. Run setup first.");
   }
-  const cloudConfig = await loadCloudConfig(nexuHome);
-  if (!cloudConfig) {
-    throw new Error(
-      "deploy-skill requires you to log in to your Nexu account to get a valid API key, then retry this skill.",
-    );
+  const credentials = await resolveNexuCloudCredentials(nexuHome);
+  if (!credentials.ok) {
+    throw new Error(describeNexuCredentialsError(credentials));
   }
   return {
     baseUrl: validateBaseUrl(config.baseUrl),
-    apiKey: cloudConfig.apiKey.trim(),
+    apiKey: credentials.apiKey,
   };
 }
 

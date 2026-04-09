@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -14,23 +13,7 @@ import {
 } from "./deploy_skill_core.js";
 
 function nexuHome() {
-  if (process.env.NEXU_HOME?.trim()) {
-    return process.env.NEXU_HOME.trim();
-  }
-  // Desktop app path (priority)
-  const desktopPath = path.join(
-    os.homedir(),
-    "Library",
-    "Application Support",
-    "@nexu",
-    "desktop",
-    ".nexu"
-  );
-  if (fs.existsSync(desktopPath)) {
-    return desktopPath;
-  }
-  // Traditional runtime path (fallback)
-  return path.join(os.homedir(), ".nexu");
+  return process.env.NEXU_HOME?.trim() || path.join(os.homedir(), ".nexu");
 }
 
 function parseArgs(argv) {
