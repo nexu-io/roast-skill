@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -904,30 +905,52 @@ function upsertJob(jobs, nextJob) {
   return [...withoutCurrent, nextJob];
 }
 
+// Try multiple paths to find Nexu cloud config (desktop app + traditional)
+async function loadCloudConfig(nexuHome) {
+  const candidates = [
+    nexuHome,
+    path.join(os.homedir(), "Library", "Application Support", "@nexu", "desktop", ".nexu"),
+    path.join(os.homedir(), ".nexu"),
+  ];
+  // Deduplicate
+  const seen = new Set();
+  for (const candidate of candidates) {
+    if (seen.has(candidate)) continue;
+    seen.add(candidate);
+    const cfg = await readJsonFile(nexuConfigPath(candidate), null);
+    if (
+      cfg &&
+      typeof cfg === "object" &&
+      cfg.desktop &&
+      typeof cfg.desktop === "object" &&
+      cfg.desktop.cloud &&
+      typeof cfg.desktop.cloud === "object" &&
+      cfg.desktop.cloud.connected === true &&
+      typeof cfg.desktop.cloud.apiKey === "string" &&
+      cfg.desktop.cloud.apiKey.trim().length > 0
+    ) {
+      return cfg.desktop.cloud;
+    }
+  }
+  return null;
+}
+
 async function resolveConfig(nexuHome) {
-  const config = await loadPageDeployConfig(nexuHome);
+  // deploy-skill.json may be in a different path than config.json
+  // Try both nexuHome and ~/.nexu for deploy config
+  let config = await loadPageDeployConfig(nexuHome);
+  if (typeof config.baseUrl !== "string" || config.baseUrl.length === 0) {
+    // Fallback: try ~/.nexu if nexuHome is desktop path
+    const classicHome = path.join(os.homedir(), ".nexu");
+    if (nexuHome !== classicHome) {
+      config = await loadPageDeployConfig(classicHome);
+    }
+  }
   if (typeof config.baseUrl !== "string" || config.baseUrl.length === 0) {
     throw new Error("deploy-skill baseUrl is not configured. Run setup first.");
   }
-  const nexuConfig = await loadLocalNexuConfig(nexuHome);
-  const cloudConfig =
-    nexuConfig &&
-    typeof nexuConfig === "object" &&
-    nexuConfig.desktop &&
-    typeof nexuConfig.desktop === "object" &&
-    nexuConfig.desktop.cloud &&
-    typeof nexuConfig.desktop.cloud === "object"
-      ? nexuConfig.desktop.cloud
-      : null;
-  if (!cloudConfig || cloudConfig.connected !== true) {
-    throw new Error(
-      "deploy-skill requires you to log in to your Nexu account to get a valid API key, then retry this skill.",
-    );
-  }
-  if (
-    typeof cloudConfig.apiKey !== "string" ||
-    cloudConfig.apiKey.trim().length === 0
-  ) {
+  const cloudConfig = await loadCloudConfig(nexuHome);
+  if (!cloudConfig) {
     throw new Error(
       "deploy-skill requires you to log in to your Nexu account to get a valid API key, then retry this skill.",
     );
