@@ -230,17 +230,29 @@ Token 换取成功后才标记 "飞书 ✅"。
 
 #### 检测项 4: 落地页部署能力（内置在 roast-skill 中）
 
-**执行动作：** 检查本 skill 自带的 deploy 脚本是否就绪：
+**执行动作：** 分 3 步检查：
+
+**4a. 检查 deploy 脚本存在：**
 ```bash
 ls <skill_dir>/deploy/deploy_skill.js
 ```
+- 不存在 → roast-skill 安装不完整，重新安装。
 
-- **文件存在** → 检查 jszip 依赖是否安装：
-  ```bash
-  ls <skill_dir>/deploy/node_modules/jszip/package.json 2>/dev/null || (cd <skill_dir>/deploy && npm install)
+**4b. 检查 jszip 依赖：**
+```bash
+ls <skill_dir>/deploy/node_modules/jszip/package.json 2>/dev/null || (cd <skill_dir>/deploy && npm install)
+```
+
+**4c. 检查 Nexu 登录态（⛔ 关键 — 必须提前检测）：**
+```bash
+node <skill_dir>/deploy/deploy_skill.js check
+```
+- 返回 `"status": "ok"` → ✅ 部署就绪
+- 报错包含 `"log in to your Nexu account"` → ⛔ **STOP，告诉用户：**
   ```
-  首次使用需要自动运行 `npm install`（约 5 秒），后续不需要。
-- **文件不存在** → roast-skill 安装不完整，重新安装。
+  ⚠️ 部署落地页需要先登录 nexu 账号。请在 nexu desktop app 中登录后再试。
+  ```
+  **不要等到最后部署阶段才发现这个问题——必须在 Step 0 就检测到并提前告知用户。**
 
 > 💡 **deploy 功能已内置在 roast-skill 中**（`deploy/` 子目录），不需要单独安装 deploy-skill。
 

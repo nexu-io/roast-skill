@@ -27,7 +27,7 @@ const FINAL_HOST = "nexu.space";
 const FINAL_PATH_PREFIX = "/deploy/";
 const FALLBACK_HOST_SUFFIX = ".pages.dev";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, "../templates");
+const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, "templates");
 const DISTILL_AVATAR_ROOT = path.join(
   TEMPLATE_ROOT,
   "distill-campaign",
