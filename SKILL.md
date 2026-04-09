@@ -386,8 +386,6 @@ python3 <skill_dir>/scripts/twitter_fetch.py <username> --count 30 --output /tmp
 ```bash
 python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --oauth-url
 ```
-> ⚠️ **重要：** 如果用户点击授权链接后报错 20029（重定向 URL 未配置），需要在飞书开放平台的**安全设置**中添加重定向 URL：`https://open.feishu.cn/document/home/index`
-
 2. 让用户点击链接 → 飞书授权页面 → 点「同意授权」→ 页面 URL 中会出现 `?code=xxx`
 
 3. 用 code 换取 token：
@@ -401,9 +399,16 @@ python3 <skill_dir>/scripts/feishu_fetch.py --app-id <FEISHU_APP_ID> --app-secre
 ```
 🔐 首次使用需要飞书授权（仅一次），这样我就能读取你所有群聊的消息，锐评更精准。
 
-👉 点击这个链接完成授权：{oauth_url}
+⚠️ 首次授权前需要先配置一下（30 秒搞定）：
+1. 打开飞书开放平台 → 你的应用 → 安全设置
+2. 在「重定向 URL」里添加：https://open.feishu.cn/document/home/index
+3. 保存后再点击下面的授权链接
+
+👉 点击授权：{oauth_url}
 
 授权后，把浏览器地址栏中 code= 后面的那串字符发给我就行。
+
+💡 如果点击后看到「重定向 URL 有误」的报错（错误码 20029），就是第 2 步还没配好，配好后刷新重试就行。
 ```
 
 > 只有当用户明确说"不想授权"或"跳过"时，才 fallback 到 Bot token 模式。不要主动说"你也可以把 Bot 拉到群里"。
