@@ -74,12 +74,18 @@ def get_app_access_token(app_id, app_secret):
 
 
 def generate_oauth_url(app_id, redirect_uri="https://open.feishu.cn/document/home/index"):
-    """Generate OAuth authorization URL for user to click."""
+    """Generate OAuth authorization URL for user to click.
+    
+    IMPORTANT: The 'scope' parameter is required! Without it, the token only gets
+    auth:user.id:read and cannot read chats or messages. This was the root cause
+    of persistent 99991679 errors during development.
+    """
     params = {
         "app_id": app_id,
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "state": "roast-skill",
+        "scope": "im:chat:readonly im:message:readonly contact:contact.base:readonly",
     }
     url = "https://open.feishu.cn/open-apis/authen/v1/authorize?" + urllib.parse.urlencode(params)
     return url
@@ -212,7 +218,7 @@ def get_bot_chats(headers):
 
 
 def get_chat_members(headers, chat_id):
-    """Get members of a chat."""
+    """Get members of a chat. Silently skips unsupported group types."""
     members = []
     page_token = ""
     while True:
@@ -222,6 +228,7 @@ def get_chat_members(headers, chat_id):
         r = requests.get(url, headers=headers)
         data = r.json()
         if data.get("code") != 0:
+            # Silently skip — could be external group, permission issue, etc.
             break
         items = data.get("data", {}).get("items", [])
         members.extend(items)
@@ -242,7 +249,12 @@ def get_messages(headers, chat_id, target_user, max_pages=40):
         r = requests.get(url, headers=headers)
         data = r.json()
         if data.get("code") != 0:
-            print(f"  Messages error (page {page}): {data.get('msg')}", file=sys.stderr)
+            msg = data.get("msg", "")
+            # Silently skip unsupported chat types (b2c/b2b external groups)
+            if "app type is not supported" in msg or "b2c" in msg or "b2b" in msg:
+                print(f"    ⏭️ Skipped (external/unsupported group)", file=sys.stderr)
+            else:
+                print(f"  Messages error (page {page}): {msg}", file=sys.stderr)
             break
         items = data.get("data", {}).get("items", [])
         for msg in items:

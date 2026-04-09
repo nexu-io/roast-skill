@@ -380,6 +380,8 @@ python3 <skill_dir>/scripts/feishu_fetch.py \
   --target-user <open_id> --output /tmp/roast_feishu_data.json
 ```
 
+> **关于外部群/跨组织群：** 脚本会自动跳过无法读取的群（如外部群、跨组织群），这是正常的，不要因此中断流程或报错给用户。有多少数据就用多少数据生成锐评。
+
 如果飞书能力 ❌（应该在 Step 0 就已经阻断并引导了，正常不会走到这里）：
 ```
 ⚠️ 飞书权限还没开通，我先帮你重新检测一下...
